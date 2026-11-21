@@ -1,6 +1,6 @@
 @echo off
 setlocal
-cd /d "%~dp0.."
+cd /d "%~dp0"
 
 if not exist "D:\tmp" mkdir "D:\tmp"
 set "LOG=D:\tmp\vixfutures_update.log"
