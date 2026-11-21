@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+*.pyo
+dist/vixfutures_direct_test.html
+dist/vixfutures_dryrun.html
+dist/remote_backup/

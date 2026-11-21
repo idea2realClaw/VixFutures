@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VIX Futures Curve · 期限结构</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">VX</div>
+        <div class="brand-text">
+          <h1>VIX Futures Curve</h1>
+          <p>VIX 期货期限结构 · CBOE 延迟结算数据</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <span id="regimeBadge" class="badge badge-neutral">加载中</span>
+        <button id="refreshBtn" class="btn" type="button">刷新数据</button>
+      </div>
+    </header>
+
+    <section class="meta-bar" aria-label="数据来源与时间">
+      <div class="meta-item"><span class="meta-label">结算时间</span><span id="settleTime" class="meta-value">—</span></div>
+      <div class="meta-item"><span class="meta-label">本地抓取</span><span id="fetchTime" class="meta-value">—</span></div>
+      <div class="meta-item"><span class="meta-label">交叉验证</span><span id="crossCheck" class="meta-value">—</span></div>
+      <div class="meta-item"><span class="meta-label">数据源</span><span class="meta-value">CBOE / SquawkFlow</span></div>
+    </section>
+
+    <div id="errorBox" class="error-box hidden" role="alert"></div>
+
+    <section class="kpi-grid" aria-label="关键指标">
+      <div class="kpi">
+        <div class="kpi-label">M1 结算价</div>
+        <div id="kpiFront" class="kpi-value">—</div>
+        <div id="kpiFrontSub" class="kpi-sub">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">M1 → M2</div>
+        <div id="kpiSecond" class="kpi-value">—</div>
+        <div id="kpiSecondSub" class="kpi-sub">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">M1 → 远月</div>
+        <div id="kpiBack" class="kpi-value">—</div>
+        <div id="kpiBackSub" class="kpi-sub">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">曲线形态</div>
+        <div id="kpiRegime" class="kpi-value kpi-text">—</div>
+        <div id="kpiRegimeSub" class="kpi-sub">—</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>VIX期货结构曲线</h2>
+        <div class="controls">
+          <div class="date-nav" role="group" aria-label="历史日期导航">
+            <button type="button" id="prevDay" title="查看前一个交易日的曲线">◀ 前一日</button>
+            <button type="button" id="nextDay" title="查看后一个交易日的曲线">后一日 ▶</button>
+            <button type="button" id="todayBtn" title="回到最新交易日">今日</button>
+          </div>
+          <div class="seg" id="axisMode" role="group" aria-label="Y 轴模式">
+            <button type="button" data-mode="auto" class="active">宽幅</button>
+            <button type="button" data-mode="narrow">窄幅</button>
+          </div>
+          <label class="toggle"><input type="checkbox" id="showPrevious" checked> 上一交易日</label>
+          <label class="toggle"><input type="checkbox" id="showLabels" checked> 数值标签</label>
+        </div>
+      </div>
+      <div class="date-display" id="dateDisplay">当前日期：加载中…</div>
+      <div class="chart-wrap" id="chartWrap">
+        <svg id="curveChart" viewBox="0 0 1000 420" preserveAspectRatio="xMidYMid meet" role="img" aria-label="VIX 期货期限结构曲线"></svg>
+        <div id="tooltip" class="tooltip hidden"></div>
+        <div id="chartEmpty" class="chart-empty">正在加载 CBOE 数据…</div>
+      </div>
+      <div class="legend">
+        <span class="legend-item"><i class="line line-main"></i>当期结算价</span>
+        <span class="legend-item"><i class="line line-prev"></i>上一交易日结算价</span>
+        <span class="legend-item"><i class="line line-spot"></i>VIX 现货</span>
+        <span class="legend-note">悬停查看合约明细</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>逐月价差</h2>
+        <span class="hint">远月高于近月为 Contango，反之为 Backwardation</span>
+      </div>
+      <div id="pairGrid" class="pair-grid"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>合约明细</h2>
+        <span id="tableSummary" class="hint">—</span>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>月份</th><th>合约</th><th>到期日</th><th class="num">结算价</th>
+              <th class="num">前结算</th><th class="num">涨跌</th><th class="num">涨跌幅</th>
+              <th class="num">成交量</th><th class="num">持仓量</th><th class="num">对上月</th>
+            </tr>
+          </thead>
+          <tbody id="contractRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>数据来源：<a href="https://www.cboe.com/us/futures/market_statistics/" target="_blank" rel="noreferrer">CBOE</a> VX 期货延迟结算价，独立交叉验证来自 SquawkFlow。</span>
+      <span>仅供研究参考，不构成交易建议。数据时间与来源以页面顶部为准。</span>
+    </footer>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

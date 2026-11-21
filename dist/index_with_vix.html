@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="qbIw3UR70kFEtUgXrp1Tcx">
+<head data-page-node-id="oWUtFJqcwem0QXASBpW4FX">
+  <meta charset="UTF-8" data-page-node-id="Qp6YzPsPlAI7ZJDDZwy16Q" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="HDYaBTzFq5IWL7oUIKswFd" />
+  <title>idea2real | 让创意成真</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --primary: #0f172a;
+      --accent: #6366f1;
+      --accent2: #22d3ee;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --card-bg: rgba(255,255,255,0.05);
+      --border: rgba(255,255,255,0.08);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+      background: var(--primary);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── 背景粒子效果 ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(99,102,241,0.15) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 80% 80%, rgba(34,211,238,0.10) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── 导航 ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2.5rem;
+      backdrop-filter: blur(12px);
+      background: rgba(15,23,42,0.7);
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    /* ── 主体内容 ── */
+    main { position: relative; z-index: 1; }
+
+    /* ── Hero ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 6rem 2rem 4rem;
+    }
+    .hero-badge {
+      display: inline-block;
+      padding: 0.3rem 1rem;
+      border-radius: 999px;
+      background: rgba(99,102,241,0.15);
+      border: 1px solid rgba(99,102,241,0.3);
+      color: #a5b4fc;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-size: clamp(2.8rem, 7vw, 5.5rem);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -2px;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 span {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      max-width: 580px;
+      font-size: 1.15rem;
+      line-height: 1.8;
+      color: var(--muted);
+      margin-bottom: 2.5rem;
+    }
+    .hero-cta {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .btn {
+      padding: 0.75rem 2rem;
+      border-radius: 0.5rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #4f46e5);
+      color: #fff;
+      border: none;
+      box-shadow: 0 4px 24px rgba(99,102,241,0.4);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(99,102,241,0.5);
+    }
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-outline:hover {
+      background: var(--card-bg);
+      border-color: rgba(255,255,255,0.2);
+    }
+
+    /* ── Section 通用 ── */
+    section {
+      padding: 5rem 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.8rem;
+    }
+    .section-title {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 1rem;
+    }
+    .section-desc {
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.8;
+      max-width: 560px;
+      margin-bottom: 3rem;
+    }
+
+    /* ── 能力卡片 ── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.8rem;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(99,102,241,0.3);
+    }
+    .card-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    .card h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .card p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+
+    /* ── 理念/流程 ── */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      counter-reset: step;
+    }
+    .step {
+      position: relative;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.5rem;
+    }
+    .step-num {
+      display: inline-block;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 800;
+      margin-bottom: 0.8rem;
+    }
+    .step h4 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+    }
+    .step p {
+      color: var(--muted);
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+
+    /* ── 联系 ── */
+    .contact-box {
+      text-align: center;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 1.5rem;
+      padding: 3rem 2rem;
+    }
+    .contact-box h2 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+    }
+    .contact-box p {
+      color: var(--muted);
+      margin-bottom: 2rem;
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+    .contact-info {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    .contact-info span { display: flex; align-items: center; gap: 0.4rem; }
+    .contact-info a { color: #93c5fd; text-decoration: none; transition: color 0.2s ease; }
+    .contact-info a:hover { color: #bfdbfe; text-decoration: underline; }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── 响应式 ── */
+    @media (max-width: 640px) {
+      nav {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0.55rem 1rem 0.35rem;
+        gap: 0.35rem;
+      }
+      nav .logo { font-size: 1.2rem; }
+      /* 手机端：置顶导航链接改为横向滑动，始终可见 */
+      .nav-links {
+        display: flex;
+        gap: 1.4rem;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 0.2rem;
+        scrollbar-width: none;
+      }
+      .nav-links::-webkit-scrollbar { display: none; }
+      .nav-links a {
+        font-size: 0.85rem;
+        white-space: nowrap;
+        padding: 0.15rem 0;
+      }
+      .hero { padding: 8rem 1.2rem 3rem; }
+      .hero h1 { letter-spacing: -1px; }
+    }
+  </style>
+</head>
+<body data-page-node-id="SvBItbdAG52SshKsEr9hIg">
+
+<!-- 导航 -->
+<nav data-page-node-id="Bmd7Es97W6XhYca3cQGhFd">
+  <div class="logo" data-page-node-id="MZIpkdoZn33exRoNQZmO4G">idea2real</div>
+  <ul class="nav-links" data-page-node-id="g7Qz53KE9vWA8g2oyEqSPx">
+    <li data-page-node-id="lEcy4kUaVOaZDa2oGrdIfR"><a href="#about" data-page-node-id="pgaVVtaSZMbYJ3eBw1YAKn">关于我们</a></li>
+    <li data-page-node-id="a8yEDWaNnqhfEMBCVpzamE"><a href="#services" data-page-node-id="MAXIvhC7i17ukV0IZZvDsP">服务</a></li>
+    <li data-page-node-id="YOcK30B0yfghWItEjxRl8Z"><a href="#process" data-page-node-id="H6hQGdfIOYay2jDnEt2GSt">理念</a></li>
+    <li data-page-node-id="o972Bib1jvggsGWgklBQx0"><a href="#contact" data-page-node-id="Bb7oGUaoMxpzSfxEA26Eql">联系</a></li>
+    <li data-page-node-id="9DOMfjQbKKxhTezyG7BFBH"><a href="/zhuantizi/" data-page-node-id="t0myTF1MYpo0rcK8mCI0WG">篆体字</a></li>
+    <li data-page-node-id="jWt2hAFEF4WAgfoaSbECcr"><a href="/crypto.html" data-page-node-id="JOBUTCGRhvXt3EoGYB1Dwp">加密箱</a></li>
+    <li><a href="/vixfutures.html" title="VIX期货结构曲线（静态快照）">VIX期货结构</a></li>
+  </ul>
+</nav>
+
+<!-- Hero -->
+<main data-page-node-id="fM6JRnQbSk4AkmAWcpqmEb">
+<div class="hero" data-page-node-id="txCoYZOtLrPPcRBpHsJJtE">
+  <div class="hero-badge" data-page-node-id="A6VGe7obBqmOkatEI5qm8X">✦ AI · 创新 · 落地</div>
+  <h1 data-page-node-id="ek02EIaITrOAaEcgYLmS55">从<span data-page-node-id="DsO3g2U26WHYR8lXEVkIzn">创意</span>到<span data-page-node-id="NDi3Fkamwxgq5e6zGdY5iZ">现实</span><br data-page-node-id="OYQkn7z0h6upbscY1tvyJZ"/>一步到位</h1>
+  <p data-page-node-id="irYCjis0W1MJXyIAbT5xEM">idea2real 专注于将您的创意与想法，通过 AI 技术和工程能力，快速转化为真实可用的产品与解决方案。</p>
+  <div class="hero-cta" data-page-node-id="obUGLdEPiwYt7H6s9aUX7C">
+    <a href="#services" class="btn btn-primary" data-page-node-id="YViC0VjEZUBgIoOeNMA9Fn">探索我们的服务</a>
+    <a href="#contact" class="btn btn-outline" data-page-node-id="r97oO0hCmHKeFPfZDFpRWb">立即联系</a>
+  </div>
+</div>
+
+<!-- 关于 -->
+<section id="about" data-page-node-id="Z2HKdi5Xsg4eCvSdSOubWn">
+  <div class="section-label" data-page-node-id="6mLrOsJGb4zDpEcjdfnDg0">关于我们</div>
+  <h2 class="section-title" data-page-node-id="j3OvRMZJxDjqTMn4dg6FMn">我们做什么</h2>
+  <p class="section-desc" data-page-node-id="sAIvFto4AQinbBPAfM2Hst">
+    idea2real 是一个聚焦 AI 应用落地的团队。我们相信，每一个好的创意都值得被认真对待，
+    每一个想法都应该有机会变成真正有用的产品。我们用技术缩短从"想到"到"做到"的距离。
+  </p>
+  <div class="cards" data-page-node-id="jG06nN6hTzTehZu6e2Z17H">
+    <div class="card" data-page-node-id="VwpSZdgDRhPFRZpgLrRAhP">
+      <div class="card-icon" data-page-node-id="pmnbkGg9tvHdo4ehJpaT6X">🤖</div>
+      <h3 data-page-node-id="c8np8LoezCqEv4LN0u9u6r">AI 应用开发</h3>
+      <p data-page-node-id="QLkYRMNSIWPHUpwlepEGvq">基于主流大语言模型，构建智能对话、内容生成、数据分析等 AI 应用，快速从 0 到 1。</p>
+    </div>
+    <div class="card" data-page-node-id="AHuAy2cZRjUJ6zXRoVtuow">
+      <div class="card-icon" data-page-node-id="jR9P1RRgkZlwpH3APNckTQ">⚡</div>
+      <h3 data-page-node-id="KKJ7HEfHR2YvLOdoIvIuYK">快速原型验证</h3>
+      <p data-page-node-id="TrvPVWusves2EKCTVFbWA4">用最短时间把创意做成可演示的原型，帮助您验证想法、与用户沟通、获得投资人认可。</p>
+    </div>
+    <div class="card" data-page-node-id="ddFJ5Gr3oX4guYRquy4lJi">
+      <div class="card-icon" data-page-node-id="iXwou3SoHWKnQUVHmv25Vk">🔧</div>
+      <h3 data-page-node-id="rBtDB07jAxSkf2ZpjR30PE">工具与自动化</h3>
+      <p data-page-node-id="TajkBZ6O8T60GHHDtLeGSI">将重复性工作自动化，打通数据流，构建内部工具，让团队专注于真正有价值的事情。</p>
+    </div>
+    <div class="card" data-page-node-id="NxWNZkCHa47nFK6emE52Fn">
+      <div class="card-icon" data-page-node-id="145UHzddGS9zXwpYrOwvFZ">🌐</div>
+      <h3 data-page-node-id="JWcu1oWHU7lnmzukH8axpH">产品孵化</h3>
+      <p data-page-node-id="q8BkG2R6q28VSiOvHX61l4">从创意梳理、产品设计、技术开发到上线运营，全流程陪跑，帮助创业者把想法做成产品。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 服务 -->
+<section id="services" data-page-node-id="ENzUfOa2MWVA2KqvMT0Q40">
+  <div class="section-label" data-page-node-id="iMOpFGYvylQSB8AnkdeHea">核心能力</div>
+  <h2 class="section-title" data-page-node-id="Ao37VsvUm5x4gGue3YeHJo">我们擅长的领域</h2>
+  <p class="section-desc" data-page-node-id="3r0DRHR86Q2Y0W0samB32P">无论是企业数字化转型，还是个人创业项目，我们都有成熟的方法和工具帮您落地。</p>
+  <div class="cards" data-page-node-id="xcvFGHjXXkoSmAKPJmEfLS">
+    <div class="card" data-page-node-id="FseruWq6ydDSiwRBvtMpDt">
+      <div class="card-icon" data-page-node-id="lRuSg2SdnVeAW3MhG1bDPV">🧠</div>
+      <h3 data-page-node-id="cSt4Zw40RvsnAW1DvHBQGg">智能体 & Agent</h3>
+      <p data-page-node-id="EpW3sIUR230c5nruPBL1y8">构建能够自主思考、执行任务的 AI 智能体，将复杂工作流自动化。</p>
+    </div>
+    <div class="card" data-page-node-id="MunOF5IBNDTxVGGWdegfHx">
+      <div class="card-icon" data-page-node-id="I8UWLNBMHjNzyWem4gMxub">📊</div>
+      <h3 data-page-node-id="1KDCoOgD8hGiSHH3s3tzOx">数据分析与可视化</h3>
+      <p data-page-node-id="AMriJFkUYSjtA7UwYoHCTy">从原始数据中提炼洞察，用清晰的可视化让决策有据可依。</p>
+    </div>
+    <div class="card" data-page-node-id="8OuQC4A34MPXu1tidf89og">
+      <div class="card-icon" data-page-node-id="xky5iTso25fIGRX7fldTJn">💬</div>
+      <h3 data-page-node-id="caO5AWrzG3gOQ7WkgM5Y7r">对话系统</h3>
+      <p data-page-node-id="TuvSYdgkqg98PcVPO94lE4">构建私有知识库问答系统、客服机器人、多轮对话助手等智能交互产品。</p>
+    </div>
+    <div class="card" data-page-node-id="ebPF7vh7rIiyqnFP6BXyKn">
+      <div class="card-icon" data-page-node-id="rjULoTBu6RDENrTGUJOJrV">🚀</div>
+      <h3 data-page-node-id="eHeAlI8wAKjdBzdqUgny26">全栈开发</h3>
+      <p data-page-node-id="de3HVVvummiVQjLM8Op1VT">前端、后端、数据库、云部署一站搞定，交付可运行的完整产品。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 理念 -->
+<section id="process" data-page-node-id="67cZeDNaaS3uF1LdhCOiWW">
+  <div class="section-label" data-page-node-id="n1Sbbb1OnbWqbycw5HNhpO">我们的理念</div>
+  <h2 class="section-title" data-page-node-id="WNHaU3evBDqKDtpgOLJSPL">从想法到落地</h2>
+  <p class="section-desc" data-page-node-id="CnOaCNxeP9Ql8t399N3mbY">我们有一套经过验证的方法论，帮助创意快速、高质量地变成现实。</p>
+  <div class="steps" data-page-node-id="EhbdJtc6KzyCQYawDUEFeA">
+    <div class="step" data-page-node-id="ex8MCQ8dQNVRfHYlBE4srb">
+      <div class="step-num" data-page-node-id="D8pR9h3JPtqpdkZ1H4oF2T">01</div>
+      <h4 data-page-node-id="PlsglTB6sNc19WEAQO04IH">深度倾听</h4>
+      <p data-page-node-id="VfEuP3AZ9zixGC1mEIEpZq">理解您真正的需求和痛点，而不仅仅是表面的功能描述。</p>
+    </div>
+    <div class="step" data-page-node-id="HDJGeiTpNfpg47PlqcJm0L">
+      <div class="step-num" data-page-node-id="mUnusu4w5GTTBl8igzTzpG">02</div>
+      <h4 data-page-node-id="uFDl6dtjbB9qAGGrnrH5yP">快速原型</h4>
+      <p data-page-node-id="ACYNdRUcsn91FaDyNppjSu">用最小成本验证核心假设，避免在错误方向上浪费时间和资源。</p>
+    </div>
+    <div class="step" data-page-node-id="OXB5fLF0t4xh8lZqWCg9zE">
+      <div class="step-num" data-page-node-id="4JJQRSMOKKqBml8JuHwjTX">03</div>
+      <h4 data-page-node-id="eqjwhV4FBmFBwFBKX7g4tt">迭代打磨</h4>
+      <p data-page-node-id="gE16ZAkDoGD11DR94zg2uH">基于真实反馈持续优化，每个版本都比上一版更接近目标。</p>
+    </div>
+    <div class="step" data-page-node-id="FBGqJuPKrVQJka2xE6qvCy">
+      <div class="step-num" data-page-node-id="fGNT5Ea7fpwzpdFqXdNXlI">04</div>
+      <h4 data-page-node-id="ja1P3OVcGbPvQkJGejPyLW">稳定交付</h4>
+      <p data-page-node-id="rcsZDbpekQMjkRm8VhkjQ5">严格测试，完整文档，确保产品在真实环境中稳定运行。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 联系 -->
+<section id="contact" data-page-node-id="kTcqSwFEbG5qdYLuyyvgtZ">
+  <div class="contact-box" data-page-node-id="gHRD1BQHfFpI6Npyl0LtiT">
+    <h2 data-page-node-id="Dk5i3eR3BeLIocuHiwsSuu">有想法？<span style="background:linear-gradient(135deg,#6366f1,#22d3ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;" data-page-node-id="7VQxeBaY2vBElY7B3iQSsu">让我们来聊聊</span></h2>
+    <p data-page-node-id="BhFSj49H7hRv5IPRh5vI6l">无论您有任何创意或项目想法，欢迎随时与我们联系。<br data-page-node-id="BJPxZTIqZYzbjt8WRlYAB0"/>我们通常在 24 小时内回复。</p>
+    <div class="contact-info" data-page-node-id="jO7weCuNGULffvaeMXj5Er">
+      <span data-page-node-id="RPatRv2euMzbMChEUoE1wh">📧 <a href="mailto:idea2realsoft@gmail.com" data-page-node-id="eW6tF054BBxFJ8m5dQKXNb">contact@idea2real.cn</a></span>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer data-page-node-id="3stuUo0RoNKKJG6HjQulFE">
+  <p data-page-node-id="eKrHfVhzdUZHVMciklIhrE">© 2026 idea2real · 让每一个创意都能成真</p>
+  <p style="margin-top:0.5rem;"><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:none;">鲁ICP备2026017747号</a></p>
+</footer>
+
+</body>
+</html>

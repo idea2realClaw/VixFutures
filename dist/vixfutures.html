@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VIX期货结构曲线 · 静态快照</title>
+  <style>
+:root {
+  --bg: #f5f7fa;
+  --card: #ffffff;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --muted: #64748b;
+  --faint: #94a3b8;
+  --blue: #2563eb;
+  --red: #dc2626;
+  --green: #16a34a;
+  --shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px 24px 40px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.brand { display: flex; align-items: center; gap: 12px; }
+
+.brand-mark {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: var(--blue);
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand-text h1 { margin: 0; font-size: 20px; font-weight: 650; letter-spacing: -0.2px; }
+.brand-text p { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+
+.top-actions { display: flex; align-items: center; gap: 10px; }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+.badge-contango { color: var(--red); background: #fef2f2; border-color: #fecaca; }
+.badge-backwardation { color: var(--green); background: #f0fdf4; border-color: #bbf7d0; }
+.badge-neutral { color: var(--muted); background: #f1f5f9; border-color: var(--border); }
+
+.btn {
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn:hover { border-color: #cbd5e1; background: #f8fafc; }
+.btn:disabled { cursor: default; opacity: 0.6; }
+
+.meta-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+  padding: 10px 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+}
+.meta-item { display: flex; align-items: baseline; gap: 8px; }
+.meta-label { color: var(--faint); font-size: 12px; }
+.meta-value { color: var(--text); font-size: 12px; font-variant-numeric: tabular-nums; font-weight: 500; }
+
+.error-box {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.kpi {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+}
+.kpi-label { color: var(--muted); font-size: 12px; margin-bottom: 6px; }
+.kpi-value {
+  font-size: 26px;
+  font-weight: 650;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.5px;
+}
+.kpi-value.kpi-text { font-size: 21px; letter-spacing: 0; }
+.kpi-sub { margin-top: 5px; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.up { color: var(--red); }
+.down { color: var(--green); }
+.flat { color: var(--muted); }
+
+.panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.panel-head h2 { margin: 0; font-size: 15px; font-weight: 600; }
+.hint { color: var(--faint); font-size: 12px; }
+
+.controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.date-nav { display: inline-flex; gap: 4px; }
+.date-nav button {
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.date-nav button:hover:not(:disabled) { border-color: #cbd5e1; background: #f8fafc; }
+.date-nav button:disabled { opacity: 0.42; cursor: default; }
+.date-nav button.active { background: #eff6ff; color: var(--blue); border-color: #bfdbfe; font-weight: 600; }
+
+.date-display {
+  padding: 9px 18px 0;
+  font-size: 13px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.date-display b { color: var(--text); font-weight: 600; }
+.date-display .spot-note { margin-left: 16px; color: var(--faint); font-size: 12px; }
+
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 7px; overflow: hidden; }
+.seg button {
+  border: 0;
+  background: var(--card);
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 12px;
+  padding: 5px 12px;
+  cursor: pointer;
+}
+.seg button + button { border-left: 1px solid var(--border); }
+.seg button.active { background: #eff6ff; color: var(--blue); font-weight: 600; }
+
+.toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); cursor: pointer; }
+.toggle input { margin: 0; accent-color: var(--blue); }
+
+.chart-wrap { position: relative; padding: 12px 12px 4px; }
+#curveChart { display: block; width: 100%; height: auto; }
+.chart-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--faint);
+  font-size: 13px;
+  pointer-events: none;
+}
+.hidden { display: none !important; }
+
+.tooltip {
+  position: absolute;
+  z-index: 5;
+  min-width: 190px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+  padding: 10px 12px;
+  font-size: 12px;
+  pointer-events: none;
+}
+.tooltip-title { font-weight: 650; margin-bottom: 6px; font-size: 13px; }
+.tooltip-row { display: flex; justify-content: space-between; gap: 16px; color: var(--muted); }
+.tooltip-row b { color: var(--text); font-weight: 550; font-variant-numeric: tabular-nums; }
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 6px 20px 14px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.legend-item { display: inline-flex; align-items: center; gap: 7px; }
+.line { display: inline-block; width: 22px; height: 0; border-top-width: 2px; }
+.line-main { border-top: 2px solid var(--blue); }
+.line-prev { border-top: 2px dashed #94a3b8; }
+.line-spot { border-top: 2px dashed var(--green); }
+.legend-note { margin-left: auto; color: var(--faint); }
+
+.pair-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 10px;
+  padding: 16px;
+}
+.pair-card {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--faint);
+  border-radius: 7px;
+  padding: 9px 11px;
+}
+.pair-card.up { border-left-color: var(--red); }
+.pair-card.down { border-left-color: var(--green); }
+.pair-name { font-size: 12px; color: var(--muted); }
+.pair-pct { font-size: 17px; font-weight: 650; font-variant-numeric: tabular-nums; margin-top: 2px; }
+.pair-diff { font-size: 11px; color: var(--faint); font-variant-numeric: tabular-nums; }
+
+.table-scroll { overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table th, .data-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.data-table th { color: var(--muted); font-size: 12px; font-weight: 500; background: #f8fafc; text-align: left; }
+.data-table th.num, .data-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.data-table tbody tr:last-child td { border-bottom: 0; }
+.data-table tbody tr:hover { background: #f8fafc; }
+.data-table .month-cell { font-weight: 600; color: var(--blue); }
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  color: var(--faint);
+  font-size: 11px;
+  padding: 4px 2px 0;
+}
+.footer a { color: var(--muted); }
+
+@media (max-width: 900px) {
+  .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .app { padding: 16px 12px 32px; }
+  .kpi-grid { grid-template-columns: 1fr; }
+  .topbar { align-items: flex-start; flex-direction: column; }
+  .legend-note { display: none; }
+}
+
+.hit-counter { display: inline-block; vertical-align: middle; height: 20px; width: auto; }
+
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">VX</div>
+        <div class="brand-text">
+          <h1>VIX Futures Curve</h1>
+          <p>VIX 期货期限结构 · CBOE 延迟结算数据</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <img class="hit-counter" src="https://hits.sh/weworkwos.tailf2b74d.ts.net/vixfutures.svg?label=visits&amp;color=2563eb&amp;labelColor=64748b&amp;style=flat-square" alt="访问次数" title="由 hits.sh 统计的真实请求数">
+        <span id="regimeBadge" class="badge badge-neutral">加载中</span>
+        <button id="refreshBtn" class="btn" type="button">刷新数据</button>
+      </div>
+    </header>
+
+    <section class="meta-bar" aria-label="数据来源与时间">
+      <div class="meta-item"><span class="meta-label">结算时间</span><span id="settleTime" class="meta-value">—</span></div>
+      <div class="meta-item"><span class="meta-label">本地抓取</span><span id="fetchTime" class="meta-value">—</span></div>
+      <div class="meta-item"><span class="meta-label">交叉验证</span><span id="crossCheck" class="meta-value">—</span></div>
+      <div class="meta-item"><span class="meta-label">数据源</span><span class="meta-value">CBOE / SquawkFlow</span></div>
+      <div class="meta-item"><span class="meta-label">页面模式</span><span class="meta-value">静态快照 · 生成于 2026-11-21T10:48:44+08:00 · 共 21 个交易日</span></div>
+    </section>
+
+    <div id="errorBox" class="error-box hidden" role="alert"></div>
+
+    <section class="kpi-grid" aria-label="关键指标">
+      <div class="kpi">
+        <div class="kpi-label">M1 结算价</div>
+        <div id="kpiFront" class="kpi-value">—</div>
+        <div id="kpiFrontSub" class="kpi-sub">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">M1 → M2</div>
+        <div id="kpiSecond" class="kpi-value">—</div>
+        <div id="kpiSecondSub" class="kpi-sub">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">M1 → 远月</div>
+        <div id="kpiBack" class="kpi-value">—</div>
+        <div id="kpiBackSub" class="kpi-sub">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">曲线形态</div>
+        <div id="kpiRegime" class="kpi-value kpi-text">—</div>
+        <div id="kpiRegimeSub" class="kpi-sub">—</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>VIX期货结构曲线</h2>
+        <div class="controls">
+          <div class="date-nav" role="group" aria-label="历史日期导航">
+            <button type="button" id="prevDay" title="查看前一个交易日的曲线">◀ 前一日</button>
+            <button type="button" id="nextDay" title="查看后一个交易日的曲线">后一日 ▶</button>
+            <button type="button" id="todayBtn" title="回到最新交易日">今日</button>
+          </div>
+          <div class="seg" id="axisMode" role="group" aria-label="Y 轴模式">
+            <button type="button" data-mode="auto" class="active">宽幅</button>
+            <button type="button" data-mode="narrow">窄幅</button>
+          </div>
+          <label class="toggle"><input type="checkbox" id="showPrevious" checked> 上一交易日</label>
+          <label class="toggle"><input type="checkbox" id="showLabels" checked> 数值标签</label>
+        </div>
+      </div>
+      <div class="date-display" id="dateDisplay">当前日期：加载中…</div>
+      <div class="chart-wrap" id="chartWrap">
+        <svg id="curveChart" viewBox="0 0 1000 420" preserveAspectRatio="xMidYMid meet" role="img" aria-label="VIX 期货期限结构曲线"></svg>
+        <div id="tooltip" class="tooltip hidden"></div>
+        <div id="chartEmpty" class="chart-empty">正在加载 CBOE 数据…</div>
+      </div>
+      <div class="legend">
+        <span class="legend-item"><i class="line line-main"></i>当期结算价</span>
+        <span class="legend-item"><i class="line line-prev"></i>上一交易日结算价</span>
+        <span class="legend-item"><i class="line line-spot"></i>VIX 现货</span>
+        <span class="legend-note">悬停查看合约明细</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>逐月价差</h2>
+        <span class="hint">远月高于近月为 Contango，反之为 Backwardation</span>
+      </div>
+      <div id="pairGrid" class="pair-grid"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>合约明细</h2>
+        <span id="tableSummary" class="hint">—</span>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>月份</th><th>合约</th><th>到期日</th><th class="num">结算价</th>
+              <th class="num">前结算</th><th class="num">涨跌</th><th class="num">涨跌幅</th>
+              <th class="num">成交量</th><th class="num">持仓量</th><th class="num">对上月</th>
+            </tr>
+          </thead>
+          <tbody id="contractRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>数据来源：<a href="https://www.cboe.com/us/futures/market_statistics/" target="_blank" rel="noreferrer">CBOE</a> VX 期货延迟结算价，独立交叉验证来自 SquawkFlow。</span>
+      <span>仅供研究参考，不构成交易建议。数据时间与来源以页面顶部为准。</span>
+    </footer>
+  </div>
+
+  <script>
+var SNAPSHOT = {"generatedAt":"2026-11-21T10:48:44+08:00","dates":["2026-11-20","2026-11-19","2026-11-18","2026-11-17","2026-11-16","2026-11-13","2026-11-12","2026-11-11","2026-11-10","2026-11-09","2026-11-06","2026-11-05","2026-11-04","2026-11-03","2026-11-02","2026-10-30","2026-10-29","2026-10-28","2026-10-27","2026-10-26","2026-10-23"],"curves":{"2026-11-20":{"ok":true,"date":"2026-11-20","isHistorical":false,"contracts":[{"symbol":"VX/Z6","expiration":"2026-12-16","settlement":28.4582,"previousSettlement":24.5357,"lastPrice":27.0,"change":3.9225,"changePct":15.9869,"volume":279877,"openInterest":205598,"month":1,"label":"M1","monthLabel":"Dec 2026","shortLabel":"Dec 26"},{"symbol":"VX/F7","expiration":"2027-01-20","settlement":26.2462,"previousSettlement":23.989,"lastPrice":25.23,"change":2.2572,"changePct":9.4093,"volume":136787,"openInterest":61638,"month":2,"label":"M2","monthLabel":"Jan 2027","shortLabel":"Jan 27"},{"symbol":"VX/G7","expiration":"2027-02-17","settlement":25.3855,"previousSettlement":23.7349,"lastPrice":24.6,"change":1.6506,"changePct":6.9543,"volume":57437,"openInterest":38133,"month":3,"label":"M3","monthLabel":"Feb 2027","shortLabel":"Feb 27"},{"symbol":"VX/H7","expiration":"2027-03-17","settlement":24.6715,"previousSettlement":23.5396,"lastPrice":24.07,"change":1.1319,"changePct":4.8085,"volume":22516,"openInterest":25288,"month":4,"label":"M4","monthLabel":"Mar 2027","shortLabel":"Mar 27"},{"symbol":"VX/J7","expiration":"2027-04-21","settlement":24.3078,"previousSettlement":23.4854,"lastPrice":23.9,"change":0.8224,"changePct":3.5018,"volume":17833,"openInterest":13436,"month":5,"label":"M5","monthLabel":"Apr 2027","shortLabel":"Apr 27"},{"symbol":"VX/K7","expiration":"2027-05-18","settlement":23.9784,"previousSettlement":23.3466,"lastPrice":23.65,"change":0.6318,"changePct":2.7062,"volume":5689,"openInterest":9813,"month":6,"label":"M6","monthLabel":"May 2027","shortLabel":"May 27"},{"symbol":"VX/M7","expiration":"2027-06-16","settlement":23.7227,"previousSettlement":23.2,"lastPrice":23.55,"change":0.5227,"changePct":2.253,"volume":2945,"openInterest":3857,"month":7,"label":"M7","monthLabel":"Jun 2027","shortLabel":"Jun 27"},{"symbol":"VX/N7","expiration":"2027-07-21","settlement":23.625,"previousSettlement":23.2,"lastPrice":23.64,"change":0.425,"changePct":1.8319,"volume":676,"openInterest":758,"month":8,"label":"M8","monthLabel":"Jul 2027","shortLabel":"Jul 27"}],"pairs":[{"from":"M1","to":"M2","difference":-2.212,"percent":-7.7728},{"from":"M2","to":"M3","difference":-0.8607,"percent":-3.2793},{"from":"M3","to":"M4","difference":-0.714,"percent":-2.8126},{"from":"M4","to":"M5","difference":-0.3637,"percent":-1.4742},{"from":"M5","to":"M6","difference":-0.3294,"percent":-1.3551},{"from":"M6","to":"M7","difference":-0.2557,"percent":-1.0664},{"from":"M7","to":"M8","difference":-0.0977,"percent":-0.4118}],"metrics":{"regime":"backwardation","front":28.4582,"second":26.2462,"back":23.625,"frontSecondSpreadPct":-7.7728,"frontBackSpread":-4.8332,"frontBackSpreadPct":-16.9835,"contractCount":8},"spot":{"price":35.89,"asOf":"2026-11-20T21:15:01+00:00","source":"Yahoo Finance ^VIX","fallback":false,"currentOnly":false},"source":{"primary":"CBOE VX futures settlement (delayed)","primaryUrl":"https://www-api.cboe.com/us/futures/api/data/?symbol=VX","cboeLastUpdate":"2026-11-20T20:47:19.483615-06:00","asOfDate":"2026-11-20","crossCheck":{"status":"ok","source":"https://api.squawkflow.com/api/public/vix-term-structure","asOfDate":"2026-11-20","comparisons":[{"symbol":"VX/Z6","cboe":28.4582,"other":28.4582,"absDiff":0.0},{"symbol":"VX/F7","cboe":26.2462,"other":26.2462,"absDiff":0.0},{"symbol":"VX/G7","cboe":25.3855,"other":25.3855,"absDiff":0.0},{"symbol":"VX/H7","cboe":24.6715,"other":24.6715,"absDiff":0.0},{"symbol":"VX/J7","cboe":24.3078,"other":24.3078,"absDiff":0.0},{"symbol":"VX/K7","cboe":23.9784,"other":23.9784,"absDiff":0.0},{"symbol":"VX/M7","cboe":23.7227,"other":23.7227,"absDiff":0.0},{"symbol":"VX/N7","cboe":23.625,"other":23.625,"absDiff":0.0}],"maxAbsDiff":0.0},"fetchedAt":"2026-11-21T10:48:23+08:00"},"fetchedAt":"2026-11-21T10:48:23+08:00","cache":"miss"},"2026-11-19":{"ok":true,"date":"2026-11-19","isHistorical":true,"contracts":[{"symbol":"VX/Z6","expiration":"2026-12-16","settlement":24.5357,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":1,"label":"M1","monthLabel":"Dec 2026","shortLabel":"Dec 26"},{"symbol":"VX/F7","expiration":"2027-01-20","settlement":23.989,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":2,"label":"M2","monthLabel":"Jan 2027","shortLabel":"Jan 27"},{"symbol":"VX/G7","expiration":"2027-02-17","settlement":23.7349,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":3,"label":"M3","monthLabel":"Feb 2027","shortLabel":"Feb 27"},{"symbol":"VX/H7","expiration":"2027-03-17","settlement":23.5396,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":4,"label":"M4","monthLabel":"Mar 2027","shortLabel":"Mar 27"},{"symbol":"VX/J7","expiration":"2027-04-21","settlement":23.4854,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":5,"label":"M5","monthLabel":"Apr 2027","shortLabel":"Apr 27"},{"symbol":"VX/K7","expiration":"2027-05-19","settlement":23.3466,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":6,"label":"M6","monthLabel":"May 2027","shortLabel":"May 27"},{"symbol":"VX/M7","expiration":"2027-06-16","settlement":23.2,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":7,"label":"M7","monthLabel":"Jun 2027","shortLabel":"Jun 27"},{"symbol":"VX/N7","expiration":"2027-07-21","settlement":23.2,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":8,"label":"M8","monthLabel":"Jul 2027","shortLabel":"Jul 27"}],"pairs":[{"from":"M1","to":"M2","difference":-0.5467,"percent":-2.2282},{"from":"M2","to":"M3","difference":-0.2541,"percent":-1.0592},{"from":"M3","to":"M4","difference":-0.1953,"percent":-0.8228},{"from":"M4","to":"M5","difference":-0.0542,"percent":-0.2303},{"from":"M5","to":"M6","difference":-0.1388,"percent":-0.591},{"from":"M6","to":"M7","difference":-0.1466,"percent":-0.6279},{"from":"M7","to":"M8","difference":0.0,"percent":0.0}],"metrics":{"regime":"backwardation","front":24.5357,"second":23.989,"back":23.2,"frontSecondSpreadPct":-2.2282,"frontBackSpread":-1.3357,"frontBackSpreadPct":-5.4439,"contractCount":8},"spot":{"price":28.44,"asOf":"2026-11-19T08:00:00+00:00","source":"Yahoo Finance ^VIX","fallback":false,"currentOnly":false},"source":{"primary":"volchart.io historical VX settlements","primaryUrl":"https://volchart.io/ajax_historical?n1=2026-11-19","asOfDate":"2026-11-19","crossCheck":{"status":"not_applicable","reason":"historical feed"},"fetchedAt":"2026-11-21T10:48:24+08:00"},"fetchedAt":"2026-11-21T10:48:24+08:00","cache":"miss"},"2026-11-18":{"ok":true,"date":"2026-11-18","isHistorical":true,"contracts":[{"symbol":"VX/Z6","expiration":"2026-12-16","settlement":21.9372,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":1,"label":"M1","monthLabel":"Dec 2026","shortLabel":"Dec 26"},{"symbol":"VX/F7","expiration":"2027-01-20","settlement":21.9965,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":2,"label":"M2","monthLabel":"Jan 2027","shortLabel":"Jan 27"},{"symbol":"VX/G7","expiration":"2027-02-17","settlement":22.1281,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":3,"label":"M3","monthLabel":"Feb 2027","shortLabel":"Feb 27"},{"symbol":"VX/H7","expiration":"2027-03-17","settlement":22.0994,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":4,"label":"M4","monthLabel":"Mar 2027","shortLabel":"Mar 27"},{"symbol":"VX/J7","expiration":"2027-04-21","settlement":22.254,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":5,"label":"M5","monthLabel":"Apr 2027","shortLabel":"Apr 27"},{"symbol":"VX/K7","expiration":"2027-05-19","settlement":22.1628,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":6,"label":"M6","monthLabel":"May 2027","shortLabel":"May 27"},{"symbol":"VX/M7","expiration":"2027-06-16","settlement":22.1508,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":7,"label":"M7","monthLabel":"Jun 2027","shortLabel":"Jun 27"},{"symbol":"VX/N7","expiration":"2027-07-21","settlement":22.3,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":8,"label":"M8","monthLabel":"Jul 2027","shortLabel":"Jul 27"}],"pairs":[{"from":"M1","to":"M2","difference":0.0593,"percent":0.2703},{"from":"M2","to":"M3","difference":0.1316,"percent":0.5983},{"from":"M3","to":"M4","difference":-0.0287,"percent":-0.1297},{"from":"M4","to":"M5","difference":0.1546,"percent":0.6996},{"from":"M5","to":"M6","difference":-0.0912,"percent":-0.4098},{"from":"M6","to":"M7","difference":-0.012,"percent":-0.0541},{"from":"M7","to":"M8","difference":0.1492,"percent":0.6736}],"metrics":{"regime":"contango","front":21.9372,"second":21.9965,"back":22.3,"frontSecondSpreadPct":0.2703,"frontBackSpread":0.3628,"frontBackSpreadPct":1.6538,"contractCount":8},"spot":{"price":24.56,"asOf":"2026-11-18T08:00:00+00:00","source":"Yahoo Finance ^VIX","fallback":false,"currentOnly":false},"source":{"primary":"volchart.io historical VX settlements","primaryUrl":"https://volchart.io/ajax_historical?n1=2026-11-18","asOfDate":"2026-11-18","crossCheck":{"status":"not_applicable","reason":"historical feed"},"fetchedAt":"2026-11-21T10:48:25+08:00"},"fetchedAt":"2026-11-21T10:48:25+08:00","cache":"miss"},"2026-11-17":{"ok":true,"date":"2026-11-17","isHistorical":true,"contracts":[{"symbol":"VX/X6","expiration":"2026-11-18","settlement":24.7417,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":1,"label":"M1","monthLabel":"Nov 2026","shortLabel":"Nov 26"},{"symbol":"VX/Z6","expiration":"2026-12-16","settlement":22.6881,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":2,"label":"M2","monthLabel":"Dec 2026","shortLabel":"Dec 26"},{"symbol":"VX/F7","expiration":"2027-01-20","settlement":22.6527,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":3,"label":"M3","monthLabel":"Jan 2027","shortLabel":"Jan 27"},{"symbol":"VX/G7","expiration":"2027-02-17","settlement":22.8088,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":4,"label":"M4","monthLabel":"Feb 2027","shortLabel":"Feb 27"},{"symbol":"VX/H7","expiration":"2027-03-17","settlement":22.6567,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":5,"label":"M5","monthLabel":"Mar 2027","shortLabel":"Mar 27"},{"symbol":"VX/J7","expiration":"2027-04-21","settlement":22.6971,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":6,"label":"M6","monthLabel":"Apr 2027","shortLabel":"Apr 27"},{"symbol":"VX/K7","expiration":"2027-05-19","settlement":22.5012,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":7,"label":"M7","monthLabel":"May 2027","shortLabel":"May 27"},{"symbol":"VX/M7","expiration":"2027-06-16","settlement":22.3005,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":8,"label":"M8","monthLabel":"Jun 2027","shortLabel":"Jun 27"},{"symbol":"VX/N7","expiration":"2027-07-21","settlement":22.2623,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":9,"label":"M9","monthLabel":"Jul 2027","shortLabel":"Jul 27"}],"pairs":[{"from":"M1","to":"M2","difference":-2.0536,"percent":-8.3002},{"from":"M2","to":"M3","difference":-0.0354,"percent":-0.156},{"from":"M3","to":"M4","difference":0.1561,"percent":0.6891},{"from":"M4","to":"M5","difference":-0.1521,"percent":-0.6668},{"from":"M5","to":"M6","difference":0.0404,"percent":0.1783},{"from":"M6","to":"M7","difference":-0.1959,"percent":-0.8631},{"from":"M7","to":"M8","difference":-0.2007,"percent":-0.892},{"from":"M8","to":"M9","difference":-0.0382,"percent":-0.1713}],"metrics":{"regime":"backwardation","front":24.7417,"second":22.6881,"back":22.2623,"frontSecondSpreadPct":-8.3002,"frontBackSpread":-2.4794,"frontBackSpreadPct":-10.0211,"contractCount":9},"spot":{"price":25.46,"asOf":"2026-11-17T08:00:00+00:00","source":"Yahoo Finance ^VIX","fallback":false,"currentOnly":false},"source":{"primary":"volchart.io historical VX settlements","primaryUrl":"https://volchart.io/ajax_historical?n1=2026-11-17","asOfDate":"2026-11-17","crossCheck":{"status":"not_applicable","reason":"historical feed"},"fetchedAt":"2026-11-21T10:48:26+08:00"},"fetchedAt":"2026-11-21T10:48:26+08:00","cache":"miss"},"2026-11-16":{"ok":true,"date":"2026-11-16","isHistorical":true,"contracts":[{"symbol":"VX/X6","expiration":"2026-11-18","settlement":22.5309,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":1,"label":"M1","monthLabel":"Nov 2026","shortLabel":"Nov 26"},{"symbol":"VX/Z6","expiration":"2026-12-16","settlement":21.1059,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":2,"label":"M2","monthLabel":"Dec 2026","shortLabel":"Dec 26"},{"symbol":"VX/F7","expiration":"2027-01-20","settlement":21.2827,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":3,"label":"M3","monthLabel":"Jan 2027","shortLabel":"Jan 27"},{"symbol":"VX/G7","expiration":"2027-02-17","settlement":21.3889,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":4,"label":"M4","monthLabel":"Feb 2027","shortLabel":"Feb 27"},{"symbol":"VX/H7","expiration":"2027-03-17","settlement":21.3935,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":5,"label":"M5","monthLabel":"Mar 2027","shortLabel":"Mar 27"},{"symbol":"VX/J7","expiration":"2027-04-21","settlement":21.6179,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":6,"label":"M6","monthLabel":"Apr 2027","shortLabel":"Apr 27"},{"symbol":"VX/K7","expiration":"2027-05-19","settlement":21.688,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":7,"label":"M7","monthLabel":"May 2027","shortLabel":"May 27"},{"symbol":"VX/M7","expiration":"2027-06-16","settlement":21.6978,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":8,"label":"M8","monthLabel":"Jun 2027","shortLabel":"Jun 27"},{"symbol":"VX/N7","expiration":"2027-07-21","settlement":21.875,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":9,"label":"M9","monthLabel":"Jul 2027","shortLabel":"Jul 27"}],"pairs":[{"from":"M1","to":"M2","difference":-1.425,"percent":-6.3246},{"from":"M2","to":"M3","difference":0.1768,"percent":0.8377},{"from":"M3","to":"M4","difference":0.1062,"percent":0.499},{"from":"M4","to":"M5","difference":0.0046,"percent":0.0215},{"from":"M5","to":"M6","difference":0.2244,"percent":1.0489},{"from":"M6","to":"M7","difference":0.0701,"percent":0.3243},{"from":"M7","to":"M8","difference":0.0098,"percent":0.0452},{"from":"M8","to":"M9","difference":0.1772,"percent":0.8167}],"metrics":{"regime":"backwardation","front":22.5309,"second":21.1059,"back":21.875,"frontSecondSpreadPct":-6.3246,"frontBackSpread":-0.6559,"frontBackSpreadPct":-2.9111,"contractCount":9},"spot":{"price":22.91,"asOf":"2026-11-16T08:00:00+00:00","source":"Yahoo Finance ^VIX","fallback":false,"currentOnly":false},"source":{"primary":"volchart.io historical VX settlements","primaryUrl":"https://volchart.io/ajax_historical?n1=2026-11-16","asOfDate":"2026-11-16","crossCheck":{"status":"not_applicable","reason":"historical feed"},"fetchedAt":"2026-11-21T10:48:27+08:00"},"fetchedAt":"2026-11-21T10:48:27+08:00","cache":"miss"},"2026-11-13":{"ok":true,"date":"2026-11-13","isHistorical":true,"contracts":[{"symbol":"VX/X6","expiration":"2026-11-18","settlement":19.1079,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":1,"label":"M1","monthLabel":"Nov 2026","shortLabel":"Nov 26"},{"symbol":"VX/Z6","expiration":"2026-12-16","settlement":19.4379,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":2,"label":"M2","monthLabel":"Dec 2026","shortLabel":"Dec 26"},{"symbol":"VX/F7","expiration":"2027-01-20","settlement":20.1892,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":3,"label":"M3","monthLabel":"Jan 2027","shortLabel":"Jan 27"},{"symbol":"VX/G7","expiration":"2027-02-17","settlement":20.5558,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":4,"label":"M4","monthLabel":"Feb 2027","shortLabel":"Feb 27"},{"symbol":"VX/H7","expiration":"2027-03-17","settlement":20.7984,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":5,"label":"M5","monthLabel":"Mar 2027","shortLabel":"Mar 27"},{"symbol":"VX/J7","expiration":"2027-04-21","settlement":21.1861,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":6,"label":"M6","monthLabel":"Apr 2027","shortLabel":"Apr 27"},{"symbol":"VX/K7","expiration":"2027-05-19","settlement":21.3,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":7,"label":"M7","monthLabel":"May 2027","shortLabel":"May 27"},{"symbol":"VX/M7","expiration":"2027-06-16","settlement":21.2753,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":8,"label":"M8","monthLabel":"Jun 2027","shortLabel":"Jun 27"},{"symbol":"VX/N7","expiration":"2027-07-21","settlement":21.4999,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":9,"label":"M9","monthLabel":"Jul 2027","shortLabel":"Jul 27"}],"pairs":[{"from":"M1","to":"M2","difference":0.33,"percent":1.727},{"from":"M2","to":"M3","difference":0.7513,"percent":3.8651},{"from":"M3","to":"M4","difference":0.3666,"percent":1.8158},{"from":"M4","to":"M5","difference":0.2426,"percent":1.1802},{"from":"M5","to":"M6","difference":0.3877,"percent":1.8641},{"from":"M6","to":"M7","difference":0.1139,"percent":0.5376},{"from":"M7","to":"M8","difference":-0.0247,"percent":-0.116},{"from":"M8","to":"M9","difference":0.2246,"percent":1.0557}],"metrics":{"regime":"contango","front":19.1079,"second":19.4379,"back":21.4999,"frontSecondSpreadPct":1.727,"frontBackSpread":2.392,"frontBackSpreadPct":12.5184,"contractCount":9},"spot":{"price":19.3,"asOf":"2026-11-13T08:00:00+00:00","source":"Yahoo Finance ^VIX","fallback":false,"currentOnly":false},"source":{"primary":"volchart.io historical VX settlements","primaryUrl":"https://volchart.io/ajax_historical?n1=2026-11-13","asOfDate":"2026-11-13","crossCheck":{"status":"not_applicable","reason":"historical feed"},"fetchedAt":"2026-11-21T10:48:28+08:00"},"fetchedAt":"2026-11-21T10:48:28+08:00","cache":"miss"},"2026-11-12":{"ok":true,"date":"2026-11-12","isHistorical":true,"contracts":[{"symbol":"VX/X6","expiration":"2026-11-18","settlement":18.7337,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":1,"label":"M1","monthLabel":"Nov 2026","shortLabel":"Nov 26"},{"symbol":"VX/Z6","expiration":"2026-12-16","settlement":18.9627,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":2,"label":"M2","monthLabel":"Dec 2026","shortLabel":"Dec 26"},{"symbol":"VX/F7","expiration":"2027-01-20","settlement":19.6767,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":3,"label":"M3","monthLabel":"Jan 2027","shortLabel":"Jan 27"},{"symbol":"VX/G7","expiration":"2027-02-17","settlement":20.1276,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":4,"label":"M4","monthLabel":"Feb 2027","shortLabel":"Feb 27"},{"symbol":"VX/H7","expiration":"2027-03-17","settlement":20.3992,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":5,"label":"M5","monthLabel":"Mar 2027","shortLabel":"Mar 27"},{"symbol":"VX/J7","expiration":"2027-04-21","settlement":20.8448,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":6,"label":"M6","monthLabel":"Apr 2027","shortLabel":"Apr 27"},{"symbol":"VX/K7","expiration":"2027-05-19","settlement":20.975,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":7,"label":"M7","monthLabel":"May 2027","shortLabel":"May 27"},{"symbol":"VX/M7","expiration":"2027-06-16","settlement":21.0236,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":8,"label":"M8","monthLabel":"Jun 2027","shortLabel":"Jun 27"},{"symbol":"VX/N7","expiration":"2027-07-21","settlement":21.25,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":9,"label":"M9","monthLabel":"Jul 2027","shortLabel":"Jul 27"}],"pairs":[{"from":"M1","to":"M2","difference":0.229,"percent":1.2224},{"from":"M2","to":"M3","difference":0.714,"percent":3.7653},{"from":"M3","to":"M4","difference":0.4509,"percent":2.2915},{"from":"M4","to":"M5","difference":0.2716,"percent":1.3494},{"from":"M5","to":"M6","difference":0.4456,"percent":2.1844},{"from":"M6","to":"M7","difference":0.1302,"percent":0.6246},{"from":"M7","to":"M8","difference":0.0486,"percent":0.2317},{"from":"M8","to":"M9","difference":0.2264,"percent":1.0769}],"metrics":{"regime":"contango","front":18.7337,"second":18.9627,"back":21.25,"frontSecondSpreadPct":1.2224,"frontBackSpread":2.5163,"frontBackSpreadPct":13.4319,"contractCount":9},"spot":{"price":18.7,"asOf":"2026-11-12T08:00:00+00:00","source":"Yahoo Finance ^VIX","fallback":false,"currentOnly":false},"source":{"primary":"volchart.io historical VX settlements","primaryUrl":"https://volchart.io/ajax_historical?n1=2026-11-12","asOfDate":"2026-11-12","crossCheck":{"status":"not_applicable","reason":"historical feed"},"fetchedAt":"2026-11-21T10:48:29+08:00"},"fetchedAt":"2026-11-21T10:48:29+08:00","cache":"miss"},"2026-11-11":{"ok":true,"date":"2026-11-11","isHistorical":true,"contracts":[{"symbol":"VX/X6","expiration":"2026-11-18","settlement":18.0519,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":1,"label":"M1","monthLabel":"Nov 2026","shortLabel":"Nov 26"},{"symbol":"VX/Z6","expiration":"2026-12-16","settlement":18.4042,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":2,"label":"M2","monthLabel":"Dec 2026","shortLabel":"Dec 26"},{"symbol":"VX/F7","expiration":"2027-01-20","settlement":19.2852,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":3,"label":"M3","monthLabel":"Jan 2027","shortLabel":"Jan 27"},{"symbol":"VX/G7","expiration":"2027-02-17","settlement":19.7947,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":4,"label":"M4","monthLabel":"Feb 2027","shortLabel":"Feb 27"},{"symbol":"VX/H7","expiration":"2027-03-17","settlement":20.1025,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":5,"label":"M5","monthLabel":"Mar 2027","shortLabel":"Mar 27"},{"symbol":"VX/J7","expiration":"2027-04-21","settlement":20.5072,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":6,"label":"M6","monthLabel":"Apr 2027","shortLabel":"Apr 27"},{"symbol":"VX/K7","expiration":"2027-05-19","settlement":20.675,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":7,"label":"M7","monthLabel":"May 2027","shortLabel":"May 27"},{"symbol":"VX/M7","expiration":"2027-06-16","settlement":20.75,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":8,"label":"M8","monthLabel":"Jun 2027","shortLabel":"Jun 27"},{"symbol":"VX/N7","expiration":"2027-07-21","settlement":21.2,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":9,"label":"M9","monthLabel":"Jul 2027","shortLabel":"Jul 27"}],"pairs":[{"from":"M1","to":"M2","difference":0.3523,"percent":1.9516},{"from":"M2","to":"M3","difference":0.881,"percent":4.787},{"from":"M3","to":"M4","difference":0.5095,"percent":2.6419},{"from":"M4","to":"M5","difference":0.3078,"percent":1.555},{"from":"M5","to":"M6","difference":0.4047,"percent":2.0132},{"from":"M6","to":"M7","difference":0.1678,"percent":0.8182},{"from":"M7","to":"M8","difference":0.075,"percent":0.3628},{"from":"M8","to":"M9","difference":0.45,"percent":2.1687}],"metrics":{"regime":"contango","front":18.0519,"second":18.4042,"back":21.2,"frontSecondSpreadPct":1.9516,"frontBackSpread":3.1481,"frontBackSpreadPct":17.4392,"contractCount":9},"spot":{"price":17.49,"asOf":"2026-11-11T08:00:00+00:00","source":"Yahoo Finance ^VIX","fallback":false,"currentOnly":false},"source":{"primary":"volchart.io historical VX settlements","primaryUrl":"https://volchart.io/ajax_historical?n1=2026-11-11","asOfDate":"2026-11-11","crossCheck":{"status":"not_applicable","reason":"historical feed"},"fetchedAt":"2026-11-21T10:48:30+08:00"},"fetchedAt":"2026-11-21T10:48:30+08:00","cache":"miss"},"2026-11-10":{"ok":true,"date":"2026-11-10","isHistorical":true,"contracts":[{"symbol":"VX/X6","expiration":"2026-11-18","settlement":19.9067,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":1,"label":"M1","monthLabel":"Nov 2026","shortLabel":"Nov 26"},{"symbol":"VX/Z6","expiration":"2026-12-16","settlement":19.5125,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":2,"label":"M2","monthLabel":"Dec 2026","shortLabel":"Dec 26"},{"symbol":"VX/F7","expiration":"2027-01-20","settlement":20.0385,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":3,"label":"M3","monthLabel":"Jan 2027","shortLabel":"Jan 27"},{"symbol":"VX/G7","expiration":"2027-02-17","settlement":20.3507,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":4,"label":"M4","monthLabel":"Feb 2027","shortLabel":"Feb 27"},{"symbol":"VX/H7","expiration":"2027-03-17","settlement":20.5457,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":5,"label":"M5","monthLabel":"Mar 2027","shortLabel":"Mar 27"},{"symbol":"VX/J7","expiration":"2027-04-21","settlement":20.8593,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":6,"label":"M6","monthLabel":"Apr 2027","shortLabel":"Apr 27"},{"symbol":"VX/K7","expiration":"2027-05-19","settlement":20.9492,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":7,"label":"M7","monthLabel":"May 2027","shortLabel":"May 27"},{"symbol":"VX/M7","expiration":"2027-06-16","settlement":21.0,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":8,"label":"M8","monthLabel":"Jun 2027","shortLabel":"Jun 27"},{"symbol":"VX/N7","expiration":"2027-07-21","settlement":21.325,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":9,"label":"M9","monthLabel":"Jul 2027","shortLabel":"Jul 27"}],"pairs":[{"from":"M1","to":"M2","difference":-0.3942,"percent":-1.9802},{"from":"M2","to":"M3","difference":0.526,"percent":2.6957},{"from":"M3","to":"M4","difference":0.3122,"percent":1.558},{"from":"M4","to":"M5","difference":0.195,"percent":0.9582},{"from":"M5","to":"M6","difference":0.3136,"percent":1.5264},{"from":"M6","to":"M7","difference":0.0899,"percent":0.431},{"from":"M7","to":"M8","difference":0.0508,"percent":0.2425},{"from":"M8","to":"M9","difference":0.325,"percent":1.5476}],"metrics":{"regime":"contango","front":19.9067,"second":19.5125,"back":21.325,"frontSecondSpreadPct":-1.9802,"frontBackSpread":1.4183,"frontBackSpreadPct":7.1247,"contractCount":9},"spot":{"price":19.46,"asOf":"2026-11-10T08:00:00+00:00","source":"Yahoo Finance ^VIX","fallback":false,"currentOnly":false},"source":{"primary":"volchart.io historical VX settlements","primaryUrl":"https://volchart.io/ajax_historical?n1=2026-11-10","asOfDate":"2026-11-10","crossCheck":{"status":"not_applicable","reason":"historical feed"},"fetchedAt":"2026-11-21T10:48:31+08:00"},"fetchedAt":"2026-11-21T10:48:31+08:00","cache":"miss"},"2026-11-09":{"ok":true,"date":"2026-11-09","isHistorical":true,"contracts":[{"symbol":"VX/X6","expiration":"2026-11-18","settlement":20.0091,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":1,"label":"M1","monthLabel":"Nov 2026","shortLabel":"Nov 26"},{"symbol":"VX/Z6","expiration":"2026-12-16","settlement":19.4945,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":2,"label":"M2","monthLabel":"Dec 2026","shortLabel":"Dec 26"},{"symbol":"VX/F7","expiration":"2027-01-20","settlement":20.0999,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":3,"label":"M3","monthLabel":"Jan 2027","shortLabel":"Jan 27"},{"symbol":"VX/G7","expiration":"2027-02-17","settlement":20.4594,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":4,"label":"M4","monthLabel":"Feb 2027","shortLabel":"Feb 27"},{"symbol":"VX/H7","expiration":"2027-03-17","settlement":20.6058,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":5,"label":"M5","monthLabel":"Mar 2027","shortLabel":"Mar 27"},{"symbol":"VX/J7","expiration":"2027-04-21","settlement":20.8868,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":6,"label":"M6","monthLabel":"Apr 2027","shortLabel":"Apr 27"},{"symbol":"VX/K7","expiration":"2027-05-19","settlement":20.9206,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":7,"label":"M7","monthLabel":"May 2027","shortLabel":"May 27"},{"symbol":"VX/M7","expiration":"2027-06-16","settlement":21.025,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":8,"label":"M8","monthLabel":"Jun 2027","shortLabel":"Jun 27"},{"symbol":"VX/N7","expiration":"2027-07-21","settlement":21.3,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":9,"label":"M9","monthLabel":"Jul 2027","shortLabel":"Jul 27"}],"pairs":[{"from":"M1","to":"M2","difference":-0.5146,"percent":-2.5718},{"from":"M2","to":"M3","difference":0.6054,"percent":3.1055},{"from":"M3","to":"M4","difference":0.3595,"percent":1.7886},{"from":"M4","to":"M5","difference":0.1464,"percent":0.7156},{"from":"M5","to":"M6","difference":0.281,"percent":1.3637},{"from":"M6","to":"M7","difference":0.0338,"percent":0.1618},{"from":"M7","to":"M8","difference":0.1044,"percent":0.499},{"from":"M8","to":"M9","difference":0.275,"percent":1.308}],"metrics":{"regime":"contango","front":20.0091,"second":19.4945,"back":21.3,"frontSecondSpreadPct":-2.5718,"frontBackSpread":1.2909,"frontBackSpreadPct":6.4516,"contractCount":9},"spot":{"price":19.92,"asOf":"2026-11-09T08:00:00+00:00","source":"Yahoo Finance ^VIX","fallback":false,"currentOnly":false},"source":{"primary":"volchart.io historical VX settlements","primaryUrl":"https://volchart.io/ajax_historical?n1=2026-11-09","asOfDate":"2026-11-09","crossCheck":{"status":"not_applicable","reason":"historical feed"},"fetchedAt":"2026-11-21T10:48:32+08:00"},"fetchedAt":"2026-11-21T10:48:32+08:00","cache":"miss"},"2026-11-06":{"ok":true,"date":"2026-11-06","isHistorical":true,"contracts":[{"symbol":"VX/X6","expiration":"2026-11-18","settlement":23.6945,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":1,"label":"M1","monthLabel":"Nov 2026","shortLabel":"Nov 26"},{"symbol":"VX/Z6","expiration":"2026-12-16","settlement":22.1837,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":2,"label":"M2","monthLabel":"Dec 2026","shortLabel":"Dec 26"},{"symbol":"VX/F7","expiration":"2027-01-20","settlement":22.051,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":3,"label":"M3","monthLabel":"Jan 2027","shortLabel":"Jan 27"},{"symbol":"VX/G7","expiration":"2027-02-17","settlement":21.9361,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":4,"label":"M4","monthLabel":"Feb 2027","shortLabel":"Feb 27"},{"symbol":"VX/H7","expiration":"2027-03-17","settlement":21.7001,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":5,"label":"M5","monthLabel":"Mar 2027","shortLabel":"Mar 27"},{"symbol":"VX/J7","expiration":"2027-04-21","settlement":21.7774,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":6,"label":"M6","monthLabel":"Apr 2027","shortLabel":"Apr 27"},{"symbol":"VX/K7","expiration":"2027-05-19","settlement":21.725,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":7,"label":"M7","monthLabel":"May 2027","shortLabel":"May 27"},{"symbol":"VX/M7","expiration":"2027-06-16","settlement":21.675,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":8,"label":"M8","monthLabel":"Jun 2027","shortLabel":"Jun 27"},{"symbol":"VX/N7","expiration":"2027-07-21","settlement":21.875,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":9,"label":"M9","monthLabel":"Jul 2027","shortLabel":"Jul 27"}],"pairs":[{"from":"M1","to":"M2","difference":-1.5108,"percent":-6.3762},{"from":"M2","to":"M3","difference":-0.1327,"percent":-0.5982},{"from":"M3","to":"M4","difference":-0.1149,"percent":-0.5211},{"from":"M4","to":"M5","difference":-0.236,"percent":-1.0759},{"from":"M5","to":"M6","difference":0.0773,"percent":0.3562},{"from":"M6","to":"M7","difference":-0.0524,"percent":-0.2406},{"from":"M7","to":"M8","difference":-0.05,"percent":-0.2301},{"from":"M8","to":"M9","difference":0.2,"percent":0.9227}],"metrics":{"regime":"backwardation","front":23.6945,"second":22.1837,"back":21.875,"frontSecondSpreadPct":-6.3762,"frontBackSpread":-1.8195,"frontBackSpreadPct":-7.679,"contractCount":9},"spot":{"price":25.64,"asOf":"2026-11-06T08:00:00+00:00","source":"Yahoo Finance ^VIX","fallback":false,"currentOnly":false},"source":{"primary":"volchart.io historical VX settlements","primaryUrl":"https://volchart.io/ajax_historical?n1=2026-11-06","asOfDate":"2026-11-06","crossCheck":{"status":"not_applicable","reason":"historical feed"},"fetchedAt":"2026-11-21T10:48:33+08:00"},"fetchedAt":"2026-11-21T10:48:33+08:00","cache":"miss"},"2026-11-05":{"ok":true,"date":"2026-11-05","isHistorical":true,"contracts":[{"symbol":"VX/X6","expiration":"2026-11-18","settlement":24.5355,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":1,"label":"M1","monthLabel":"Nov 2026","shortLabel":"Nov 26"},{"symbol":"VX/Z6","expiration":"2026-12-16","settlement":22.1918,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":2,"label":"M2","monthLabel":"Dec 2026","shortLabel":"Dec 26"},{"symbol":"VX/F7","expiration":"2027-01-20","settlement":21.7251,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":3,"label":"M3","monthLabel":"Jan 2027","shortLabel":"Jan 27"},{"symbol":"VX/G7","expiration":"2027-02-17","settlement":21.5629,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":4,"label":"M4","monthLabel":"Feb 2027","shortLabel":"Feb 27"},{"symbol":"VX/H7","expiration":"2027-03-17","settlement":21.3236,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":5,"label":"M5","monthLabel":"Mar 2027","shortLabel":"Mar 27"},{"symbol":"VX/J7","expiration":"2027-04-21","settlement":21.4299,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":6,"label":"M6","monthLabel":"Apr 2027","shortLabel":"Apr 27"},{"symbol":"VX/K7","expiration":"2027-05-19","settlement":21.3991,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":7,"label":"M7","monthLabel":"May 2027","shortLabel":"May 27"},{"symbol":"VX/M7","expiration":"2027-06-16","settlement":21.3714,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":8,"label":"M8","monthLabel":"Jun 2027","shortLabel":"Jun 27"},{"symbol":"VX/N7","expiration":"2027-07-21","settlement":21.552,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":9,"label":"M9","monthLabel":"Jul 2027","shortLabel":"Jul 27"}],"pairs":[{"from":"M1","to":"M2","difference":-2.3437,"percent":-9.5523},{"from":"M2","to":"M3","difference":-0.4667,"percent":-2.103},{"from":"M3","to":"M4","difference":-0.1622,"percent":-0.7466},{"from":"M4","to":"M5","difference":-0.2393,"percent":-1.1098},{"from":"M5","to":"M6","difference":0.1063,"percent":0.4985},{"from":"M6","to":"M7","difference":-0.0308,"percent":-0.1437},{"from":"M7","to":"M8","difference":-0.0277,"percent":-0.1294},{"from":"M8","to":"M9","difference":0.1806,"percent":0.8451}],"metrics":{"regime":"backwardation","front":24.5355,"second":22.1918,"back":21.552,"frontSecondSpreadPct":-9.5523,"frontBackSpread":-2.9835,"frontBackSpreadPct":-12.1599,"contractCount":9},"spot":{"price":28.18,"asOf":"2026-11-05T08:00:00+00:00","source":"Yahoo Finance ^VIX","fallback":false,"currentOnly":false},"source":{"primary":"volchart.io historical VX settlements","primaryUrl":"https://volchart.io/ajax_historical?n1=2026-11-05","asOfDate":"2026-11-05","crossCheck":{"status":"not_applicable","reason":"historical feed"},"fetchedAt":"2026-11-21T10:48:34+08:00"},"fetchedAt":"2026-11-21T10:48:34+08:00","cache":"miss"},"2026-11-04":{"ok":true,"date":"2026-11-04","isHistorical":true,"contracts":[{"symbol":"VX/X6","expiration":"2026-11-18","settlement":17.7419,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":1,"label":"M1","monthLabel":"Nov 2026","shortLabel":"Nov 26"},{"symbol":"VX/Z6","expiration":"2026-12-16","settlement":17.9817,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":2,"label":"M2","monthLabel":"Dec 2026","shortLabel":"Dec 26"},{"symbol":"VX/F7","expiration":"2027-01-20","settlement":19.0893,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":3,"label":"M3","monthLabel":"Jan 2027","shortLabel":"Jan 27"},{"symbol":"VX/G7","expiration":"2027-02-17","settlement":19.6415,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":4,"label":"M4","monthLabel":"Feb 2027","shortLabel":"Feb 27"},{"symbol":"VX/H7","expiration":"2027-03-17","settlement":19.8566,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":5,"label":"M5","monthLabel":"Mar 2027","shortLabel":"Mar 27"},{"symbol":"VX/J7","expiration":"2027-04-21","settlement":20.3241,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":6,"label":"M6","monthLabel":"Apr 2027","shortLabel":"Apr 27"},{"symbol":"VX/K7","expiration":"2027-05-19","settlement":20.4,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":7,"label":"M7","monthLabel":"May 2027","shortLabel":"May 27"},{"symbol":"VX/M7","expiration":"2027-06-16","settlement":20.6292,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":8,"label":"M8","monthLabel":"Jun 2027","shortLabel":"Jun 27"},{"symbol":"VX/N7","expiration":"2027-07-21","settlement":20.9,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":9,"label":"M9","monthLabel":"Jul 2027","shortLabel":"Jul 27"}],"pairs":[{"from":"M1","to":"M2","difference":0.2398,"percent":1.3516},{"from":"M2","to":"M3","difference":1.1076,"percent":6.1596},{"from":"M3","to":"M4","difference":0.5522,"percent":2.8927},{"from":"M4","to":"M5","difference":0.2151,"percent":1.0951},{"from":"M5","to":"M6","difference":0.4675,"percent":2.3544},{"from":"M6","to":"M7","difference":0.0759,"percent":0.3734},{"from":"M7","to":"M8","difference":0.2292,"percent":1.1235},{"from":"M8","to":"M9","difference":0.2708,"percent":1.3127}],"metrics":{"regime":"contango","front":17.7419,"second":17.9817,"back":20.9,"frontSecondSpreadPct":1.3516,"frontBackSpread":3.1581,"frontBackSpreadPct":17.8002,"contractCount":9},"spot":{"price":16.61,"asOf":"2026-11-04T08:00:00+00:00","source":"Yahoo Finance ^VIX","fallback":false,"currentOnly":false},"source":{"primary":"volchart.io historical VX settlements","primaryUrl":"https://volchart.io/ajax_historical?n1=2026-11-04","asOfDate":"2026-11-04","crossCheck":{"status":"not_applicable","reason":"historical feed"},"fetchedAt":"2026-11-21T10:48:36+08:00"},"fetchedAt":"2026-11-21T10:48:36+08:00","cache":"miss"},"2026-11-03":{"ok":true,"date":"2026-11-03","isHistorical":true,"contracts":[{"symbol":"VX/X6","expiration":"2026-11-18","settlement":19.8993,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":1,"label":"M1","monthLabel":"Nov 2026","shortLabel":"Nov 26"},{"symbol":"VX/Z6","expiration":"2026-12-16","settlement":19.5477,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":2,"label":"M2","monthLabel":"Dec 2026","shortLabel":"Dec 26"},{"symbol":"VX/F7","expiration":"2027-01-20","settlement":20.1804,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":3,"label":"M3","monthLabel":"Jan 2027","shortLabel":"Jan 27"},{"symbol":"VX/G7","expiration":"2027-02-17","settlement":20.4605,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":4,"label":"M4","monthLabel":"Feb 2027","shortLabel":"Feb 27"},{"symbol":"VX/H7","expiration":"2027-03-17","settlement":20.5768,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":5,"label":"M5","monthLabel":"Mar 2027","shortLabel":"Mar 27"},{"symbol":"VX/J7","expiration":"2027-04-21","settlement":20.9263,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":6,"label":"M6","monthLabel":"Apr 2027","shortLabel":"Apr 27"},{"symbol":"VX/K7","expiration":"2027-05-19","settlement":21.0227,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":7,"label":"M7","monthLabel":"May 2027","shortLabel":"May 27"},{"symbol":"VX/M7","expiration":"2027-06-16","settlement":21.1,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":8,"label":"M8","monthLabel":"Jun 2027","shortLabel":"Jun 27"},{"symbol":"VX/N7","expiration":"2027-07-21","settlement":21.375,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":9,"label":"M9","monthLabel":"Jul 2027","shortLabel":"Jul 27"}],"pairs":[{"from":"M1","to":"M2","difference":-0.3516,"percent":-1.7669},{"from":"M2","to":"M3","difference":0.6327,"percent":3.2367},{"from":"M3","to":"M4","difference":0.2801,"percent":1.388},{"from":"M4","to":"M5","difference":0.1163,"percent":0.5684},{"from":"M5","to":"M6","difference":0.3495,"percent":1.6985},{"from":"M6","to":"M7","difference":0.0964,"percent":0.4607},{"from":"M7","to":"M8","difference":0.0773,"percent":0.3677},{"from":"M8","to":"M9","difference":0.275,"percent":1.3033}],"metrics":{"regime":"contango","front":19.8993,"second":19.5477,"back":21.375,"frontSecondSpreadPct":-1.7669,"frontBackSpread":1.4757,"frontBackSpreadPct":7.4158,"contractCount":9},"spot":{"price":20.83,"asOf":"2026-11-03T08:00:00+00:00","source":"Yahoo Finance ^VIX","fallback":false,"currentOnly":false},"source":{"primary":"volchart.io historical VX settlements","primaryUrl":"https://volchart.io/ajax_historical?n1=2026-11-03","asOfDate":"2026-11-03","crossCheck":{"status":"not_applicable","reason":"historical feed"},"fetchedAt":"2026-11-21T10:48:37+08:00"},"fetchedAt":"2026-11-21T10:48:37+08:00","cache":"miss"},"2026-11-02":{"ok":true,"date":"2026-11-02","isHistorical":true,"contracts":[{"symbol":"VX/X6","expiration":"2026-11-18","settlement":20.3752,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":1,"label":"M1","monthLabel":"Nov 2026","shortLabel":"Nov 26"},{"symbol":"VX/Z6","expiration":"2026-12-16","settlement":19.8438,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":2,"label":"M2","monthLabel":"Dec 2026","shortLabel":"Dec 26"},{"symbol":"VX/F7","expiration":"2027-01-20","settlement":20.3798,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":3,"label":"M3","monthLabel":"Jan 2027","shortLabel":"Jan 27"},{"symbol":"VX/G7","expiration":"2027-02-17","settlement":20.6025,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":4,"label":"M4","monthLabel":"Feb 2027","shortLabel":"Feb 27"},{"symbol":"VX/H7","expiration":"2027-03-17","settlement":20.7343,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":5,"label":"M5","monthLabel":"Mar 2027","shortLabel":"Mar 27"},{"symbol":"VX/J7","expiration":"2027-04-21","settlement":21.0247,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":6,"label":"M6","monthLabel":"Apr 2027","shortLabel":"Apr 27"},{"symbol":"VX/K7","expiration":"2027-05-19","settlement":21.075,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":7,"label":"M7","monthLabel":"May 2027","shortLabel":"May 27"},{"symbol":"VX/M7","expiration":"2027-06-16","settlement":21.125,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":8,"label":"M8","monthLabel":"Jun 2027","shortLabel":"Jun 27"},{"symbol":"VX/N7","expiration":"2027-07-21","settlement":21.35,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":9,"label":"M9","monthLabel":"Jul 2027","shortLabel":"Jul 27"}],"pairs":[{"from":"M1","to":"M2","difference":-0.5314,"percent":-2.6081},{"from":"M2","to":"M3","difference":0.536,"percent":2.7011},{"from":"M3","to":"M4","difference":0.2227,"percent":1.0927},{"from":"M4","to":"M5","difference":0.1318,"percent":0.6397},{"from":"M5","to":"M6","difference":0.2904,"percent":1.4006},{"from":"M6","to":"M7","difference":0.0503,"percent":0.2392},{"from":"M7","to":"M8","difference":0.05,"percent":0.2372},{"from":"M8","to":"M9","difference":0.225,"percent":1.0651}],"metrics":{"regime":"contango","front":20.3752,"second":19.8438,"back":21.35,"frontSecondSpreadPct":-2.6081,"frontBackSpread":0.9748,"frontBackSpreadPct":4.7842,"contractCount":9},"spot":{"price":21.15,"asOf":"2026-11-02T08:00:00+00:00","source":"Yahoo Finance ^VIX","fallback":false,"currentOnly":false},"source":{"primary":"volchart.io historical VX settlements","primaryUrl":"https://volchart.io/ajax_historical?n1=2026-11-02","asOfDate":"2026-11-02","crossCheck":{"status":"not_applicable","reason":"historical feed"},"fetchedAt":"2026-11-21T10:48:38+08:00"},"fetchedAt":"2026-11-21T10:48:38+08:00","cache":"miss"},"2026-10-30":{"ok":true,"date":"2026-10-30","isHistorical":true,"contracts":[{"symbol":"VX/X6","expiration":"2026-11-18","settlement":20.3603,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":1,"label":"M1","monthLabel":"Nov 2026","shortLabel":"Nov 26"},{"symbol":"VX/Z6","expiration":"2026-12-16","settlement":19.7888,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":2,"label":"M2","monthLabel":"Dec 2026","shortLabel":"Dec 26"},{"symbol":"VX/F7","expiration":"2027-01-20","settlement":20.2572,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":3,"label":"M3","monthLabel":"Jan 2027","shortLabel":"Jan 27"},{"symbol":"VX/G7","expiration":"2027-02-17","settlement":20.5031,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":4,"label":"M4","monthLabel":"Feb 2027","shortLabel":"Feb 27"},{"symbol":"VX/H7","expiration":"2027-03-17","settlement":20.5955,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":5,"label":"M5","monthLabel":"Mar 2027","shortLabel":"Mar 27"},{"symbol":"VX/J7","expiration":"2027-04-21","settlement":20.8992,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":6,"label":"M6","monthLabel":"Apr 2027","shortLabel":"Apr 27"},{"symbol":"VX/K7","expiration":"2027-05-19","settlement":20.9394,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":7,"label":"M7","monthLabel":"May 2027","shortLabel":"May 27"},{"symbol":"VX/M7","expiration":"2027-06-16","settlement":21.0433,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":8,"label":"M8","monthLabel":"Jun 2027","shortLabel":"Jun 27"},{"symbol":"VX/N7","expiration":"2027-07-21","settlement":21.25,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":9,"label":"M9","monthLabel":"Jul 2027","shortLabel":"Jul 27"}],"pairs":[{"from":"M1","to":"M2","difference":-0.5715,"percent":-2.8069},{"from":"M2","to":"M3","difference":0.4684,"percent":2.367},{"from":"M3","to":"M4","difference":0.2459,"percent":1.2139},{"from":"M4","to":"M5","difference":0.0924,"percent":0.4507},{"from":"M5","to":"M6","difference":0.3037,"percent":1.4746},{"from":"M6","to":"M7","difference":0.0402,"percent":0.1924},{"from":"M7","to":"M8","difference":0.1039,"percent":0.4962},{"from":"M8","to":"M9","difference":0.2067,"percent":0.9823}],"metrics":{"regime":"contango","front":20.3603,"second":19.7888,"back":21.25,"frontSecondSpreadPct":-2.8069,"frontBackSpread":0.8897,"frontBackSpreadPct":4.3698,"contractCount":9},"spot":{"price":19.42,"asOf":"2026-10-30T07:00:00+00:00","source":"Yahoo Finance ^VIX","fallback":false,"currentOnly":false},"source":{"primary":"volchart.io historical VX settlements","primaryUrl":"https://volchart.io/ajax_historical?n1=2026-10-30","asOfDate":"2026-10-30","crossCheck":{"status":"not_applicable","reason":"historical feed"},"fetchedAt":"2026-11-21T10:48:39+08:00"},"fetchedAt":"2026-11-21T10:48:39+08:00","cache":"miss"},"2026-10-29":{"ok":true,"date":"2026-10-29","isHistorical":true,"contracts":[{"symbol":"VX/X6","expiration":"2026-11-18","settlement":18.1504,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":1,"label":"M1","monthLabel":"Nov 2026","shortLabel":"Nov 26"},{"symbol":"VX/Z6","expiration":"2026-12-16","settlement":18.3943,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":2,"label":"M2","monthLabel":"Dec 2026","shortLabel":"Dec 26"},{"symbol":"VX/F7","expiration":"2027-01-20","settlement":19.3715,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":3,"label":"M3","monthLabel":"Jan 2027","shortLabel":"Jan 27"},{"symbol":"VX/G7","expiration":"2027-02-17","settlement":19.8683,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":4,"label":"M4","monthLabel":"Feb 2027","shortLabel":"Feb 27"},{"symbol":"VX/H7","expiration":"2027-03-17","settlement":20.1348,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":5,"label":"M5","monthLabel":"Mar 2027","shortLabel":"Mar 27"},{"symbol":"VX/J7","expiration":"2027-04-21","settlement":20.509,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":6,"label":"M6","monthLabel":"Apr 2027","shortLabel":"Apr 27"},{"symbol":"VX/K7","expiration":"2027-05-19","settlement":20.65,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":7,"label":"M7","monthLabel":"May 2027","shortLabel":"May 27"},{"symbol":"VX/M7","expiration":"2027-06-16","settlement":20.8246,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":8,"label":"M8","monthLabel":"Jun 2027","shortLabel":"Jun 27"},{"symbol":"VX/N7","expiration":"2027-07-21","settlement":21.2,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":9,"label":"M9","monthLabel":"Jul 2027","shortLabel":"Jul 27"}],"pairs":[{"from":"M1","to":"M2","difference":0.2439,"percent":1.3438},{"from":"M2","to":"M3","difference":0.9772,"percent":5.3125},{"from":"M3","to":"M4","difference":0.4968,"percent":2.5646},{"from":"M4","to":"M5","difference":0.2665,"percent":1.3413},{"from":"M5","to":"M6","difference":0.3742,"percent":1.8585},{"from":"M6","to":"M7","difference":0.141,"percent":0.6875},{"from":"M7","to":"M8","difference":0.1746,"percent":0.8455},{"from":"M8","to":"M9","difference":0.3754,"percent":1.8027}],"metrics":{"regime":"contango","front":18.1504,"second":18.3943,"back":21.2,"frontSecondSpreadPct":1.3438,"frontBackSpread":3.0496,"frontBackSpreadPct":16.8018,"contractCount":9},"spot":{"price":17.2,"asOf":"2026-10-29T07:00:00+00:00","source":"Yahoo Finance ^VIX","fallback":false,"currentOnly":false},"source":{"primary":"volchart.io historical VX settlements","primaryUrl":"https://volchart.io/ajax_historical?n1=2026-10-29","asOfDate":"2026-10-29","crossCheck":{"status":"not_applicable","reason":"historical feed"},"fetchedAt":"2026-11-21T10:48:40+08:00"},"fetchedAt":"2026-11-21T10:48:40+08:00","cache":"miss"},"2026-10-28":{"ok":true,"date":"2026-10-28","isHistorical":true,"contracts":[{"symbol":"VX/X6","expiration":"2026-11-18","settlement":18.5982,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":1,"label":"M1","monthLabel":"Nov 2026","shortLabel":"Nov 26"},{"symbol":"VX/Z6","expiration":"2026-12-16","settlement":18.7752,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":2,"label":"M2","monthLabel":"Dec 2026","shortLabel":"Dec 26"},{"symbol":"VX/F7","expiration":"2027-01-20","settlement":19.747,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":3,"label":"M3","monthLabel":"Jan 2027","shortLabel":"Jan 27"},{"symbol":"VX/G7","expiration":"2027-02-17","settlement":20.2012,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":4,"label":"M4","monthLabel":"Feb 2027","shortLabel":"Feb 27"},{"symbol":"VX/H7","expiration":"2027-03-17","settlement":20.4361,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":5,"label":"M5","monthLabel":"Mar 2027","shortLabel":"Mar 27"},{"symbol":"VX/J7","expiration":"2027-04-21","settlement":20.825,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":6,"label":"M6","monthLabel":"Apr 2027","shortLabel":"Apr 27"},{"symbol":"VX/K7","expiration":"2027-05-19","settlement":20.925,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":7,"label":"M7","monthLabel":"May 2027","shortLabel":"May 27"},{"symbol":"VX/M7","expiration":"2027-06-16","settlement":21.0899,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":8,"label":"M8","monthLabel":"Jun 2027","shortLabel":"Jun 27"},{"symbol":"VX/N7","expiration":"2027-07-21","settlement":21.3,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":9,"label":"M9","monthLabel":"Jul 2027","shortLabel":"Jul 27"}],"pairs":[{"from":"M1","to":"M2","difference":0.177,"percent":0.9517},{"from":"M2","to":"M3","difference":0.9718,"percent":5.176},{"from":"M3","to":"M4","difference":0.4542,"percent":2.3001},{"from":"M4","to":"M5","difference":0.2349,"percent":1.1628},{"from":"M5","to":"M6","difference":0.3889,"percent":1.903},{"from":"M6","to":"M7","difference":0.1,"percent":0.4802},{"from":"M7","to":"M8","difference":0.1649,"percent":0.7881},{"from":"M8","to":"M9","difference":0.2101,"percent":0.9962}],"metrics":{"regime":"contango","front":18.5982,"second":18.7752,"back":21.3,"frontSecondSpreadPct":0.9517,"frontBackSpread":2.7018,"frontBackSpreadPct":14.5272,"contractCount":9},"spot":{"price":16.91,"asOf":"2026-10-28T07:00:00+00:00","source":"Yahoo Finance ^VIX","fallback":false,"currentOnly":false},"source":{"primary":"volchart.io historical VX settlements","primaryUrl":"https://volchart.io/ajax_historical?n1=2026-10-28","asOfDate":"2026-10-28","crossCheck":{"status":"not_applicable","reason":"historical feed"},"fetchedAt":"2026-11-21T10:48:41+08:00"},"fetchedAt":"2026-11-21T10:48:41+08:00","cache":"miss"},"2026-10-27":{"ok":true,"date":"2026-10-27","isHistorical":true,"contracts":[{"symbol":"VX/X6","expiration":"2026-11-18","settlement":18.9523,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":1,"label":"M1","monthLabel":"Nov 2026","shortLabel":"Nov 26"},{"symbol":"VX/Z6","expiration":"2026-12-16","settlement":19.0683,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":2,"label":"M2","monthLabel":"Dec 2026","shortLabel":"Dec 26"},{"symbol":"VX/F7","expiration":"2027-01-20","settlement":19.9611,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":3,"label":"M3","monthLabel":"Jan 2027","shortLabel":"Jan 27"},{"symbol":"VX/G7","expiration":"2027-02-17","settlement":20.4057,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":4,"label":"M4","monthLabel":"Feb 2027","shortLabel":"Feb 27"},{"symbol":"VX/H7","expiration":"2027-03-17","settlement":20.6,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":5,"label":"M5","monthLabel":"Mar 2027","shortLabel":"Mar 27"},{"symbol":"VX/J7","expiration":"2027-04-21","settlement":20.975,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":6,"label":"M6","monthLabel":"Apr 2027","shortLabel":"Apr 27"},{"symbol":"VX/K7","expiration":"2027-05-19","settlement":21.0396,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":7,"label":"M7","monthLabel":"May 2027","shortLabel":"May 27"},{"symbol":"VX/M7","expiration":"2027-06-16","settlement":21.1354,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":8,"label":"M8","monthLabel":"Jun 2027","shortLabel":"Jun 27"},{"symbol":"VX/N7","expiration":"2027-07-21","settlement":21.25,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":9,"label":"M9","monthLabel":"Jul 2027","shortLabel":"Jul 27"}],"pairs":[{"from":"M1","to":"M2","difference":0.116,"percent":0.6121},{"from":"M2","to":"M3","difference":0.8928,"percent":4.6821},{"from":"M3","to":"M4","difference":0.4446,"percent":2.2273},{"from":"M4","to":"M5","difference":0.1943,"percent":0.9522},{"from":"M5","to":"M6","difference":0.375,"percent":1.8204},{"from":"M6","to":"M7","difference":0.0646,"percent":0.308},{"from":"M7","to":"M8","difference":0.0958,"percent":0.4553},{"from":"M8","to":"M9","difference":0.1146,"percent":0.5422}],"metrics":{"regime":"contango","front":18.9523,"second":19.0683,"back":21.25,"frontSecondSpreadPct":0.6121,"frontBackSpread":2.2977,"frontBackSpreadPct":12.1236,"contractCount":9},"spot":{"price":17.52,"asOf":"2026-10-27T07:00:00+00:00","source":"Yahoo Finance ^VIX","fallback":false,"currentOnly":false},"source":{"primary":"volchart.io historical VX settlements","primaryUrl":"https://volchart.io/ajax_historical?n1=2026-10-27","asOfDate":"2026-10-27","crossCheck":{"status":"not_applicable","reason":"historical feed"},"fetchedAt":"2026-11-21T10:48:42+08:00"},"fetchedAt":"2026-11-21T10:48:42+08:00","cache":"miss"},"2026-10-26":{"ok":true,"date":"2026-10-26","isHistorical":true,"contracts":[{"symbol":"VX/X6","expiration":"2026-11-18","settlement":19.1593,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":1,"label":"M1","monthLabel":"Nov 2026","shortLabel":"Nov 26"},{"symbol":"VX/Z6","expiration":"2026-12-16","settlement":19.195,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":2,"label":"M2","monthLabel":"Dec 2026","shortLabel":"Dec 26"},{"symbol":"VX/F7","expiration":"2027-01-20","settlement":20.0962,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":3,"label":"M3","monthLabel":"Jan 2027","shortLabel":"Jan 27"},{"symbol":"VX/G7","expiration":"2027-02-17","settlement":20.4977,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":4,"label":"M4","monthLabel":"Feb 2027","shortLabel":"Feb 27"},{"symbol":"VX/H7","expiration":"2027-03-17","settlement":20.6492,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":5,"label":"M5","monthLabel":"Mar 2027","shortLabel":"Mar 27"},{"symbol":"VX/J7","expiration":"2027-04-21","settlement":20.9776,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":6,"label":"M6","monthLabel":"Apr 2027","shortLabel":"Apr 27"},{"symbol":"VX/K7","expiration":"2027-05-19","settlement":21.075,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":7,"label":"M7","monthLabel":"May 2027","shortLabel":"May 27"},{"symbol":"VX/M7","expiration":"2027-06-16","settlement":21.2304,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":8,"label":"M8","monthLabel":"Jun 2027","shortLabel":"Jun 27"},{"symbol":"VX/N7","expiration":"2027-07-21","settlement":21.35,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":9,"label":"M9","monthLabel":"Jul 2027","shortLabel":"Jul 27"}],"pairs":[{"from":"M1","to":"M2","difference":0.0357,"percent":0.1863},{"from":"M2","to":"M3","difference":0.9012,"percent":4.695},{"from":"M3","to":"M4","difference":0.4015,"percent":1.9979},{"from":"M4","to":"M5","difference":0.1515,"percent":0.7391},{"from":"M5","to":"M6","difference":0.3284,"percent":1.5904},{"from":"M6","to":"M7","difference":0.0974,"percent":0.4643},{"from":"M7","to":"M8","difference":0.1554,"percent":0.7374},{"from":"M8","to":"M9","difference":0.1196,"percent":0.5633}],"metrics":{"regime":"contango","front":19.1593,"second":19.195,"back":21.35,"frontSecondSpreadPct":0.1863,"frontBackSpread":2.1907,"frontBackSpreadPct":11.4341,"contractCount":9},"spot":{"price":18.39,"asOf":"2026-10-26T07:00:00+00:00","source":"Yahoo Finance ^VIX","fallback":false,"currentOnly":false},"source":{"primary":"volchart.io historical VX settlements","primaryUrl":"https://volchart.io/ajax_historical?n1=2026-10-26","asOfDate":"2026-10-26","crossCheck":{"status":"not_applicable","reason":"historical feed"},"fetchedAt":"2026-11-21T10:48:43+08:00"},"fetchedAt":"2026-11-21T10:48:43+08:00","cache":"miss"},"2026-10-23":{"ok":true,"date":"2026-10-23","isHistorical":true,"contracts":[{"symbol":"VX/X6","expiration":"2026-11-18","settlement":19.6135,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":1,"label":"M1","monthLabel":"Nov 2026","shortLabel":"Nov 26"},{"symbol":"VX/Z6","expiration":"2026-12-16","settlement":19.4957,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":2,"label":"M2","monthLabel":"Dec 2026","shortLabel":"Dec 26"},{"symbol":"VX/F7","expiration":"2027-01-20","settlement":20.2025,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":3,"label":"M3","monthLabel":"Jan 2027","shortLabel":"Jan 27"},{"symbol":"VX/G7","expiration":"2027-02-17","settlement":20.525,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":4,"label":"M4","monthLabel":"Feb 2027","shortLabel":"Feb 27"},{"symbol":"VX/H7","expiration":"2027-03-17","settlement":20.6371,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":5,"label":"M5","monthLabel":"Mar 2027","shortLabel":"Mar 27"},{"symbol":"VX/J7","expiration":"2027-04-21","settlement":20.9896,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":6,"label":"M6","monthLabel":"Apr 2027","shortLabel":"Apr 27"},{"symbol":"VX/K7","expiration":"2027-05-19","settlement":21.0765,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":7,"label":"M7","monthLabel":"May 2027","shortLabel":"May 27"},{"symbol":"VX/M7","expiration":"2027-06-16","settlement":21.3,"previousSettlement":null,"lastPrice":null,"change":null,"changePct":null,"volume":null,"openInterest":null,"month":8,"label":"M8","monthLabel":"Jun 2027","shortLabel":"Jun 27"}],"pairs":[{"from":"M1","to":"M2","difference":-0.1178,"percent":-0.6006},{"from":"M2","to":"M3","difference":0.7068,"percent":3.6254},{"from":"M3","to":"M4","difference":0.3225,"percent":1.5963},{"from":"M4","to":"M5","difference":0.1121,"percent":0.5462},{"from":"M5","to":"M6","difference":0.3525,"percent":1.7081},{"from":"M6","to":"M7","difference":0.0869,"percent":0.414},{"from":"M7","to":"M8","difference":0.2235,"percent":1.0604}],"metrics":{"regime":"contango","front":19.6135,"second":19.4957,"back":21.3,"frontSecondSpreadPct":-0.6006,"frontBackSpread":1.6865,"frontBackSpreadPct":8.5987,"contractCount":8},"spot":{"price":19.45,"asOf":"2026-10-23T07:00:00+00:00","source":"Yahoo Finance ^VIX","fallback":false,"currentOnly":false},"source":{"primary":"volchart.io historical VX settlements","primaryUrl":"https://volchart.io/ajax_historical?n1=2026-10-23","asOfDate":"2026-10-23","crossCheck":{"status":"not_applicable","reason":"historical feed"},"fetchedAt":"2026-11-21T10:48:44+08:00"},"fetchedAt":"2026-11-21T10:48:44+08:00","cache":"miss"}}};
+(function () {
+  'use strict';
+
+  var SVG_NS = 'http://www.w3.org/2000/svg';
+  var W = 1000;
+  var H = 420;
+  var PAD = { left: 62, right: 24, top: 24, bottom: 48 };
+
+  var state = {
+    data: null,
+    dates: [],
+    dateIndex: 0,
+    axisMode: 'auto',
+    showPrevious: true,
+    showLabels: true
+  };
+
+  var MAX_BACK_DAYS = 20;
+
+  function byId(id) { return document.getElementById(id); }
+
+  function svgEl(tag, attrs, text) {
+    var node = document.createElementNS(SVG_NS, tag);
+    Object.keys(attrs || {}).forEach(function (key) {
+      node.setAttribute(key, String(attrs[key]));
+    });
+    if (text !== undefined && text !== null) node.textContent = String(text);
+    return node;
+  }
+
+  function fmt(value, digits) {
+    return value === null || value === undefined ? '—' : Number(value).toFixed(digits === undefined ? 2 : digits);
+  }
+
+  function signed(value, digits) {
+    if (value === null || value === undefined) return '—';
+    var n = Number(value);
+    return (n > 0 ? '+' : '') + n.toFixed(digits === undefined ? 2 : digits);
+  }
+
+  function trendClass(value) {
+    if (value === null || value === undefined || value === 0) return 'flat';
+    return value > 0 ? 'up' : 'down';
+  }
+
+  function formatTime(iso) {
+    if (!iso) return '—';
+    var date = new Date(iso);
+    if (isNaN(date.getTime())) return iso;
+    return date.toLocaleString('zh-CN', {
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', hour12: false
+    });
+  }
+
+  function smoothPath(points) {
+    if (!points.length) return '';
+    if (points.length === 1) return 'M' + points[0].x + ',' + points[0].y;
+    var d = 'M' + points[0].x.toFixed(2) + ',' + points[0].y.toFixed(2);
+    for (var i = 0; i < points.length - 1; i++) {
+      var p0 = points[i - 1] || points[i];
+      var p1 = points[i];
+      var p2 = points[i + 1];
+      var p3 = points[i + 2] || p2;
+      var c1x = p1.x + (p2.x - p0.x) / 6;
+      var c1y = p1.y + (p2.y - p0.y) / 6;
+      var c2x = p2.x - (p3.x - p1.x) / 6;
+      var c2y = p2.y - (p3.y - p1.y) / 6;
+      d += ' C' + c1x.toFixed(2) + ',' + c1y.toFixed(2) +
+           ' ' + c2x.toFixed(2) + ',' + c2y.toFixed(2) +
+           ' ' + p2.x.toFixed(2) + ',' + p2.y.toFixed(2);
+    }
+    return d;
+  }
+
+  function yDomain(contracts, mode, withPrevious, spotPrice) {
+    var values = contracts.map(function (c) { return c.settlement; });
+    if (withPrevious) {
+      contracts.forEach(function (c) {
+        if (c.previousSettlement !== null && c.previousSettlement !== undefined) {
+          values.push(c.previousSettlement);
+        }
+      });
+    }
+    if (spotPrice && spotPrice > 0) values.push(spotPrice);
+    var min = Math.min.apply(null, values);
+    var max = Math.max.apply(null, values);
+    if (mode === 'narrow') {
+      var pad = Math.max((max - min) * 0.18, 0.25);
+      return [min - pad, max + pad];
+    }
+    var low = Math.max(0, Math.floor((min - 2) / 5) * 5);
+    var high = Math.ceil((max + 2) / 5) * 5;
+    return [low, Math.max(high, low + 5)];
+  }
+
+  function renderChart() {
+    var svg = byId('curveChart');
+    var contracts = state.data ? state.data.contracts : [];
+    var empty = byId('chartEmpty');
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    if (!contracts.length) {
+      empty.classList.remove('hidden');
+      return;
+    }
+    empty.classList.add('hidden');
+
+    var plotWidth = W - PAD.left - PAD.right;
+    var plotHeight = H - PAD.top - PAD.bottom;
+    var spot = state.data.spot || {};
+    var domain = yDomain(contracts, state.axisMode, state.showPrevious, spot.price);
+    var xAt = function (index) {
+      return PAD.left + (contracts.length === 1 ? plotWidth / 2 : index * plotWidth / (contracts.length - 1));
+    };
+    var yAt = function (value) {
+      return PAD.top + (domain[1] - value) / (domain[1] - domain[0]) * plotHeight;
+    };
+
+    var ticks = 5;
+    for (var t = 0; t <= ticks; t++) {
+      var value = domain[0] + (domain[1] - domain[0]) * t / ticks;
+      var y = yAt(value);
+      svg.appendChild(svgEl('line', {
+        x1: PAD.left, x2: W - PAD.right, y1: y, y2: y,
+        stroke: t === 0 ? '#cbd5e1' : '#eef2f7', 'stroke-width': 1
+      }));
+      svg.appendChild(svgEl('text', {
+        x: PAD.left - 10, y: y + 4, 'text-anchor': 'end',
+        fill: '#94a3b8', 'font-size': 11
+      }, value.toFixed(state.axisMode === 'narrow' ? 1 : 0)));
+    }
+
+    contracts.forEach(function (contract, index) {
+      svg.appendChild(svgEl('text', {
+        x: xAt(index), y: H - 18, 'text-anchor': 'middle',
+        fill: '#64748b', 'font-size': 11
+      }, contract.shortLabel));
+      svg.appendChild(svgEl('text', {
+        x: xAt(index), y: H - 4, 'text-anchor': 'middle',
+        fill: '#cbd5e1', 'font-size': 9
+      }, contract.label));
+    });
+
+    if (state.showPrevious) {
+      var previousPoints = contracts
+        .filter(function (c) { return c.previousSettlement !== null && c.previousSettlement !== undefined; })
+        .map(function (c) { return { x: xAt(c.month - 1), y: yAt(c.previousSettlement) }; });
+      if (previousPoints.length > 1) {
+        svg.appendChild(svgEl('path', {
+          d: smoothPath(previousPoints), fill: 'none', stroke: '#94a3b8',
+          'stroke-width': 1.8, 'stroke-dasharray': '5 4', 'stroke-linecap': 'round'
+        }));
+      }
+    }
+
+    var mainPoints = contracts.map(function (c) {
+      return { x: xAt(c.month - 1), y: yAt(c.settlement) };
+    });
+    svg.appendChild(svgEl('path', {
+      d: smoothPath(mainPoints), fill: 'none', stroke: '#2563eb',
+      'stroke-width': 2.6, 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
+    }));
+
+    mainPoints.forEach(function (point, index) {
+      svg.appendChild(svgEl('circle', {
+        cx: point.x, cy: point.y, r: 4.2,
+        fill: '#ffffff', stroke: '#2563eb', 'stroke-width': 2
+      }));
+      if (state.showLabels) {
+        svg.appendChild(svgEl('text', {
+          x: point.x, y: point.y - 12, 'text-anchor': 'middle',
+          fill: '#475569', 'font-size': 10.5, 'font-weight': 600
+        }, fmt(contracts[index].settlement, 2)));
+      }
+    });
+
+    if (spot.price && spot.price > 0) {
+      var spotY = yAt(spot.price);
+      svg.appendChild(svgEl('line', {
+        x1: PAD.left, x2: W - PAD.right, y1: spotY, y2: spotY,
+        stroke: '#16a34a', 'stroke-width': 1.8, 'stroke-dasharray': '8 5'
+      }));
+      svg.appendChild(svgEl('text', {
+        x: W - PAD.right - 4, y: spotY - 7, 'text-anchor': 'end',
+        fill: '#16a34a', 'font-size': 11, 'font-weight': 600
+      }, 'VIX 现货 ' + fmt(spot.price, 2)));
+    }
+
+    var hoverGroup = svgEl('g', { opacity: 0, 'pointer-events': 'none' });
+    var hoverLine = svgEl('line', {
+      x1: 0, x2: 0, y1: PAD.top, y2: H - PAD.bottom,
+      stroke: '#94a3b8', 'stroke-width': 1, 'stroke-dasharray': '3 3'
+    });
+    var hoverDot = svgEl('circle', {
+      cx: 0, cy: 0, r: 7, fill: '#2563eb', 'fill-opacity': 0.18,
+      stroke: '#2563eb', 'stroke-width': 1.5
+    });
+    hoverGroup.appendChild(hoverLine);
+    hoverGroup.appendChild(hoverDot);
+    svg.appendChild(hoverGroup);
+
+    var hitArea = svgEl('rect', {
+      x: PAD.left, y: PAD.top, width: plotWidth, height: plotHeight, fill: 'transparent'
+    });
+    svg.appendChild(hitArea);
+
+    var tooltip = byId('tooltip');
+
+    function onMove(event) {
+      var rect = svg.getBoundingClientRect();
+      var viewX = (event.clientX - rect.left) * W / rect.width;
+      var nearest = 0;
+      var bestDistance = Infinity;
+      for (var i = 0; i < mainPoints.length; i++) {
+        var distance = Math.abs(mainPoints[i].x - viewX);
+        if (distance < bestDistance) { bestDistance = distance; nearest = i; }
+      }
+      var point = mainPoints[nearest];
+      var contract = contracts[nearest];
+      var pair = state.data.pairs[nearest - 1];
+
+      hoverGroup.setAttribute('opacity', '1');
+      hoverLine.setAttribute('x1', point.x);
+      hoverLine.setAttribute('x2', point.x);
+      hoverDot.setAttribute('cx', point.x);
+      hoverDot.setAttribute('cy', point.y);
+
+      var rows = [
+        ['到期日', contract.expiration],
+        ['结算价', fmt(contract.settlement, 4)],
+        ['前结算', fmt(contract.previousSettlement, 4)],
+        ['涨跌', signed(contract.change, 4)],
+        ['对上月', pair ? signed(pair.percent, 2) + '%' : '—']
+      ];
+      var html = '<div class="tooltip-title">' + contract.label + ' · ' + contract.symbol + '</div>';
+      rows.forEach(function (row) {
+        html += '<div class="tooltip-row"><span>' + row[0] + '</span><b>' + row[1] + '</b></div>';
+      });
+      tooltip.innerHTML = html;
+      tooltip.classList.remove('hidden');
+
+      var wrapRect = byId('chartWrap').getBoundingClientRect();
+      var px = point.x / W * rect.width + (rect.left - wrapRect.left);
+      var py = point.y / H * rect.height + (rect.top - wrapRect.top);
+      tooltip.style.left = Math.max(4, Math.min(px + 14, wrapRect.width - 205)) + 'px';
+      tooltip.style.top = Math.max(4, py - 12) + 'px';
+    }
+
+    function onLeave() {
+      hoverGroup.setAttribute('opacity', '0');
+      tooltip.classList.add('hidden');
+    }
+
+    hitArea.addEventListener('mousemove', onMove);
+    hitArea.addEventListener('mouseleave', onLeave);
+  }
+
+  function renderSummary() {
+    var data = state.data;
+    var metrics = data.metrics;
+    var contracts = data.contracts;
+    var front = contracts[0];
+
+    var badge = byId('regimeBadge');
+    var isContango = metrics.regime === 'contango';
+    var isBackwardation = metrics.regime === 'backwardation';
+    badge.className = 'badge badge-' + (isContango || isBackwardation ? metrics.regime : 'neutral');
+    badge.textContent = isContango ? 'Contango 正向' : isBackwardation ? 'Backwardation 逆向' : 'Flat';
+
+    byId('settleTime').textContent = formatTime(data.source.cboeLastUpdate);
+    byId('fetchTime').textContent = formatTime(data.source.fetchedAt);
+    var check = data.source.crossCheck || {};
+    byId('crossCheck').textContent = check.status === 'ok'
+      ? '一致 · 最大差 ' + fmt(check.maxAbsDiff, 4)
+      : check.status === 'unavailable' ? '备用源不可用' : '无重叠合约';
+
+    byId('kpiFront').textContent = fmt(front.settlement, 2);
+    var frontSub = byId('kpiFrontSub');
+    frontSub.textContent = '较前结算 ' + signed(front.change, 2) + ' (' + signed(front.changePct, 2) + '%)';
+    frontSub.className = 'kpi-sub ' + trendClass(front.change);
+
+    var secondValue = byId('kpiSecond');
+    secondValue.textContent = signed(metrics.frontSecondSpreadPct, 2) + '%';
+    secondValue.className = 'kpi-value ' + trendClass(metrics.frontSecondSpreadPct);
+    byId('kpiSecondSub').textContent = 'M2 ' + fmt(metrics.second, 2) + ' · 价差 ' + signed(metrics.second - metrics.front, 2);
+
+    var backValue = byId('kpiBack');
+    var backLabel = contracts[contracts.length - 1].label;
+    backValue.textContent = signed(metrics.frontBackSpreadPct, 2) + '%';
+    backValue.className = 'kpi-value ' + trendClass(metrics.frontBackSpreadPct);
+    byId('kpiBackSub').textContent = backLabel + ' ' + fmt(metrics.back, 2) + ' · 价差 ' + signed(metrics.frontBackSpread, 2);
+
+    var regimeValue = byId('kpiRegime');
+    regimeValue.textContent = isContango ? 'Contango' : isBackwardation ? 'Backwardation' : 'Flat';
+    regimeValue.className = 'kpi-value kpi-text ' + (isContango ? 'up' : isBackwardation ? 'down' : 'flat');
+    byId('kpiRegimeSub').textContent = '近月 ' + fmt(metrics.front, 2) + ' → 远月 ' + fmt(metrics.back, 2) + ' · ' + metrics.contractCount + ' 个合约';
+
+    var display = byId('dateDisplay');
+    while (display.firstChild) display.removeChild(display.firstChild);
+    var prefix = document.createElement('span');
+    prefix.textContent = '当前日期：';
+    var day = document.createElement('b');
+    day.textContent = data.date || '—';
+    display.appendChild(prefix);
+    display.appendChild(day);
+    if (state.dateIndex > 0) {
+      var offset = document.createElement('span');
+      offset.className = 'spot-note';
+      offset.textContent = '回溯 ' + state.dateIndex + ' 个交易日';
+      display.appendChild(offset);
+    }
+    var spot = data.spot || {};
+    var spotNote = document.createElement('span');
+    spotNote.className = 'spot-note';
+    spotNote.textContent = spot.price
+      ? 'VIX 现货 ' + fmt(spot.price, 2) + ' · ' + (spot.source || '') + (spot.currentOnly ? '（仅当前值）' : '')
+      : 'VIX 现货不可用';
+    display.appendChild(spotNote);
+
+    var limit = Math.min(MAX_BACK_DAYS, Math.max(0, state.dates.length - 1));
+    byId('prevDay').disabled = state.dateIndex >= limit;
+    byId('nextDay').disabled = state.dateIndex <= 0;
+    byId('todayBtn').disabled = state.dateIndex <= 0;
+    byId('todayBtn').classList.toggle('active', state.dateIndex === 0);
+  }
+
+  function renderPairs() {
+    var grid = byId('pairGrid');
+    grid.textContent = '';
+    state.data.pairs.forEach(function (pair) {
+      var card = document.createElement('div');
+      card.className = 'pair-card ' + trendClass(pair.percent);
+      var name = document.createElement('div');
+      name.className = 'pair-name';
+      name.textContent = pair.from + ' → ' + pair.to;
+      var pct = document.createElement('div');
+      pct.className = 'pair-pct ' + trendClass(pair.percent);
+      pct.textContent = signed(pair.percent, 2) + '%';
+      var diff = document.createElement('div');
+      diff.className = 'pair-diff';
+      diff.textContent = signed(pair.difference, 3) + ' pts';
+      card.appendChild(name);
+      card.appendChild(pct);
+      card.appendChild(diff);
+      grid.appendChild(card);
+    });
+  }
+
+  function renderTable() {
+    var body = byId('contractRows');
+    body.textContent = '';
+    state.data.contracts.forEach(function (contract, index) {
+      var pair = state.data.pairs[index - 1];
+      var row = document.createElement('tr');
+      var cells = [
+        { text: contract.label, cls: 'month-cell' },
+        { text: contract.symbol },
+        { text: contract.expiration },
+        { text: fmt(contract.settlement, 4), num: true },
+        { text: fmt(contract.previousSettlement, 4), num: true },
+        { text: signed(contract.change, 4), num: true, cls: trendClass(contract.change) },
+        { text: signed(contract.changePct, 2) + '%', num: true, cls: trendClass(contract.changePct) },
+        { text: contract.volume === null || contract.volume === undefined ? '—' : contract.volume.toLocaleString('en-US'), num: true },
+        { text: contract.openInterest === null || contract.openInterest === undefined ? '—' : contract.openInterest.toLocaleString('en-US'), num: true },
+        { text: pair ? signed(pair.percent, 2) + '%' : '—', num: true, cls: pair ? trendClass(pair.percent) : '' }
+      ];
+      cells.forEach(function (cell) {
+        var td = document.createElement('td');
+        if (cell.num) td.className = 'num';
+        if (cell.cls) td.className = (td.className ? td.className + ' ' : '') + cell.cls;
+        td.textContent = cell.text;
+        row.appendChild(td);
+      });
+      body.appendChild(row);
+    });
+    byId('tableSummary').textContent = '结算价单位：VIX 点数 · 成交量/持仓量来自 CBOE';
+  }
+
+  function renderAll() {
+    renderSummary();
+    renderChart();
+    renderPairs();
+    renderTable();
+  }
+
+  function load(index, force) {
+    var key = state.dates[index] || SNAPSHOT.dates[0];
+    state.data = SNAPSHOT.curves[key] || SNAPSHOT.curves[SNAPSHOT.dates[0]];
+    if (!state.data) {
+      var box = byId('errorBox');
+      box.textContent = '快照数据缺失，请返回广播站首页。';
+      box.classList.remove('hidden');
+      return;
+    }
+    renderAll();
+    byId('errorBox').classList.add('hidden');
+    var button = byId('refreshBtn');
+    button.disabled = true;
+    button.textContent = '静态快照';
+  }
+
+  function goToDate(index) {
+    state.dateIndex = index;
+    var next = index > 0 && state.dates[index]
+      ? '?date=' + encodeURIComponent(state.dates[index])
+      : window.location.pathname;
+    window.history.replaceState(null, '', next);
+    load(index, false);
+  }
+
+  byId('prevDay').addEventListener('click', function () {
+    var limit = Math.min(MAX_BACK_DAYS, Math.max(0, state.dates.length - 1));
+    if (state.dateIndex < limit) goToDate(state.dateIndex + 1);
+  });
+  byId('nextDay').addEventListener('click', function () {
+    if (state.dateIndex > 0) goToDate(state.dateIndex - 1);
+  });
+  byId('todayBtn').addEventListener('click', function () { goToDate(0); });
+  byId('axisMode').addEventListener('click', function (event) {
+    var target = event.target;
+    if (target.tagName !== 'BUTTON') return;
+    state.axisMode = target.getAttribute('data-mode');
+    Array.prototype.forEach.call(this.querySelectorAll('button'), function (button) {
+      button.classList.toggle('active', button === target);
+    });
+    renderChart();
+  });
+  byId('showPrevious').addEventListener('change', function (event) {
+    state.showPrevious = event.target.checked;
+    renderChart();
+  });
+  byId('showLabels').addEventListener('change', function (event) {
+    state.showLabels = event.target.checked;
+    renderChart();
+  });
+
+  state.dates = SNAPSHOT.dates.slice(0, MAX_BACK_DAYS + 1);
+  var requested = new URLSearchParams(window.location.search).get('date');
+  var found = state.dates.indexOf(requested);
+  if (found > 0 && found <= MAX_BACK_DAYS) state.dateIndex = found;
+  load(state.dateIndex, false);
+
+})();
+
+  </script>
+</body>
+</html>
